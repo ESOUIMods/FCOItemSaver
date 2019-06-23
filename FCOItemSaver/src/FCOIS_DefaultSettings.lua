@@ -9,7 +9,7 @@ function FCOIS.buildDefaultSettings()
     --The default values for the language and save mode
     FCOIS.settingsVars.firstRunSettings = {
         language 	 		    = 1, --Standard: English
-        saveMode     		    = 2, --Standard: Account wide FCOIS settings
+        saveMode     		    = 2, --Standard: Account wide FCOIS settings (1=Each character, 2=Account wide, 3=All accounts the same)
     }
 
     --Pre-set the deafult values

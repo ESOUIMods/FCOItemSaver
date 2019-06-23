@@ -2,6 +2,37 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
+--===================== ADDON Info =============================================
+--Addon variables
+FCOIS.addonVars = {}
+--Addon variables
+FCOIS.addonVars.addonVersionOptions 		= '1.5.7' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.57
+FCOIS.addonVars.gAddonName					= "FCOItemSaver"
+FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
+FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
+FCOIS.addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
+FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
+FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
+FCOIS.addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
+FCOIS.addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
+FCOIS.addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
+FCOIS.addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
+FCOIS.addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
+FCOIS.addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
+FCOIS.addonVars.gAddonLoaded				= false
+FCOIS.addonVars.gPlayerActivated			= false
+FCOIS.addonVars.gSettingsLoaded				= false
+
+--SavedVariables constants
+FCOIS.addonVars.savedVarName				= FCOIS.addonVars.gAddonName .. "_Settings"
+FCOIS.addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
+FCOIS.svDefaultName                         = "Default"
+FCOIS.svAccountWideName                     = "$AccountWide"
+FCOIS.svAllAccountsName                     = "$AllAccounts"
+FCOIS.svSettingsForAllName                  = "SettingsForAll"
+FCOIS.svSettingsName                        = "Settings"
+
 --Local pre chat color variables
 FCOIS.preChatVars = {}
 --Uncolored "FCOIS" pre chat text for the chat output
@@ -12,6 +43,9 @@ FCOIS.preChatVars.preChatTextGreen = "|c22DD22"..FCOIS.preChatVars.preChatText..
 FCOIS.preChatVars.preChatTextRed = "|cDD2222"..FCOIS.preChatVars.preChatText.."|r "
 --Blue colored "FCOIS" pre text for the chat output
 FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
+--Values for the "marked" entries
+FCOIS.preChatVars.currentStart = "> "
+FCOIS.preChatVars.currentEnd = " <"
 
 --Error text constants
 FCOIS.errorTexts = {}
@@ -216,6 +250,9 @@ FCOIS_DEBUG_DEPTH_ALL			= 5
 
 --Array for the mapping between variables and values
 FCOIS.mappingVars = {}
+FCOIS.mappingVars.noEntry = "-------------"
+FCOIS.mappingVars.noEntryValue = 1
+local noEntry = FCOIS.mappingVars.noEntry
 --Local last variables
 FCOIS.lastVars = {}
 --Local override variables
@@ -264,7 +301,7 @@ FCOIS.checkHandlers["dynamic"]  = true
 
 --The mapping between the FCOIS settings ID and the real server name (for the SavedVars)
 FCOIS.mappingVars.serverNames = {
-    [1] = "-------------",   -- None
+    [1] = noEntry,           -- None
     [2] = "EU Megaserver",   -- EU
     [3] = "NA Megaserver",   -- US, North America
     [4] = "PTS",             -- PTS

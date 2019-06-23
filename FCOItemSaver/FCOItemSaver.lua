@@ -1,5 +1,18 @@
 ------------------------------------------------------------------
--- [Error messages to check] --
+--FCOItemSaver.lua
+--Author: Baertram
+----------------------------------------------------------
+--Check filename FCOIS_API.lua for global API functions!
+----------------------------------------------------------
+--[[
+	Allows you to mark items with an icon so you know that you meant to save it for some reason.
+	Prevent items from beeing destroyed/extracted/traded/mailed/deconstructed/improved or sold somehow.
+	Including filters on/off/show only marked items inside inventories, crafting stations, banks, guild banks, guild stores, player 2 player trading, sending mail, fence, launder and craftbag
+]]
+
+
+------------------------------------------------------------------
+-- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -19,50 +32,14 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-06-18 - Bugfix - Baertram (on user report in comments, Ivo_ESO
---Research assistant duplicate items will be auto marked with FCOIS even if another researchable one was already marked
---> See file src/FCOIS_AutomaticMarks.lua, function
-
-
-------------------------------------------------------------------
---FCOItemSaver.lua
---Author: Baertram
-----------------------------------------------------------
---Check filename FCOIS_API.lua for global API functions!
-----------------------------------------------------------
---[[
-	Allows you to mark items with an icon so you know that you meant to save it for some reason.
-	Prevent items from beeing destroyed/extracted/traded/mailed/deconstructed/improved or sold somehow.
-	Including filters on/off/show only marked items inside inventories, crafting stations, banks, guild banks, guild stores, player 2 player trading, sending mail, fence, launder and craftbag
-]]
+-- 4) 2019-06-19 - Feature - Baertram
+--SavedVariables should be saveable for all accounts, if settings to use accountwide are enabled, and copy/delete functions are needed within the settings
+--> See file src/FCOIS_Settings.lua
 
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
-
---===================== ADDON Info =============================================
---Addon variables
-FCOIS.addonVars = {}
-FCOIS.addonVars.addonVersionOptions 		= '1.5.7' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.57
-FCOIS.addonVars.gAddonName					= "FCOItemSaver"
-FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
-FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
-FCOIS.addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
-FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
-FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
-FCOIS.addonVars.addonAuthorDisplayNamePTS  	= '@Baertram'
-FCOIS.addonVars.website 					= "https://www.esoui.com/downloads/info630-FCOItemSaver.html"
-FCOIS.addonVars.FAQwebsite                  = "https://www.esoui.com/portal.php?id=136&a=faq"
-FCOIS.addonVars.authorPortal                = "https://www.esoui.com/portal.php?&id=136"
-FCOIS.addonVars.feedback                    = "https://www.esoui.com/portal.php?id=136&a=bugreport"
-FCOIS.addonVars.donation                    = "https://www.esoui.com/portal.php?id=136&a=faq&faqid=131"
-FCOIS.addonVars.savedVarVersion		   		= 0.10 -- Changing this will reset all SavedVariables!
-FCOIS.addonVars.gAddonLoaded				= false
-FCOIS.addonVars.gPlayerActivated			= false
-FCOIS.addonVars.gSettingsLoaded				= false
-
 
 -- =====================================================================================================================
 --  Gamepad functions

@@ -1765,24 +1765,76 @@ function FCOIS.buildIconText(text, iconId, iconRight, noColor)
 end
 
 -- =====================================================================================================================
---  Logged in functions
+--  Character functions
 -- =====================================================================================================================
 --Get the currently logged in character's unique ID
 function FCOIS.getCurrentlyLoggedInCharUniqueId()
---[[
-    local loggedInCharUniqueId = 0
-    local loggedInName = GetUnitName("player")
+    --[[
+        local loggedInCharUniqueId = 0
+        local loggedInName = GetUnitName("player")
+        --Check all the characters of the account
+        for i = 1, GetNumCharacters() do
+            local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
+            local charName = zo_strformat(SI_UNIT_NAME, name)
+            --If the current logged in character was found
+            if loggedInName == charName or loggedInName == name then
+                loggedInCharUniqueId = characterId
+                break -- exit the loop
+            end
+        end
+        return tostring(loggedInCharUniqueId)
+        ]]
+    return GetCurrentCharacterId()
+end
+
+--Get the currently logged in account's characters as table, with the name as key and the characterId as value,
+--or the characterId as key and the character name as key (depending in boolean parameter keyIsCharName)
+function FCOIS.getCharactersOfAccount(keyIsCharName)
+    keyIsCharName = keyIsCharName or false
+    local charactersOfAccount
     --Check all the characters of the account
     for i = 1, GetNumCharacters() do
         local name, _, _, _, _, _, characterId = GetCharacterInfo(i)
         local charName = zo_strformat(SI_UNIT_NAME, name)
-        --If the current logged in character was found
-        if loggedInName == charName or loggedInName == name then
-            loggedInCharUniqueId = characterId
-            break -- exit the loop
+        if characterId ~= nil and charName ~= "" then
+            if charactersOfAccount == nil then charactersOfAccount = {} end
+            if keyIsCharName then
+                charactersOfAccount[charName]   = characterId
+            else
+                charactersOfAccount[characterId]= charName
+            end
         end
     end
-    return tostring(loggedInCharUniqueId)
-    ]]
-    return GetCurrentCharacterId()
+    return charactersOfAccount
+end
+
+--Get the character name using it's unique characterId.
+--If the 2nd parameter characterTable is given it needs to be a table generated via function FCOIS.getCharactersOfAccount.
+--At best the key is the unique characterId, it not it can be the characterName as well.
+function FCOIS.getCharacterName(characterId, characterTable)
+    if characterId == nil then return nil end
+    local keyIsName = false
+    local characterName
+    if characterTable == nil then
+        characterTable =  FCOIS.getCharactersOfAccount(false)
+    else
+        --Check if the characterTable got the uniqueId or the name as key
+        for key, _ in pairs(characterTable) do
+            if type(key) == "String" then
+                keyIsName = true
+                break -- end the for loop
+            end
+        end
+    end
+    --Key of the table is a name?
+    if keyIsName then
+        --Key of the table is an unique ID?
+        for charName, charId in pairs(characterTable) do
+            if charId == characterId then return charName end
+        end
+    else
+        characterName = characterTable[characterId]
+    end
+    if not characterName or characterName == "" then return end
+    return characterName
 end
