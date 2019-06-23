@@ -1708,7 +1708,6 @@ FCOIS.checkVars.filterPanelIdsForAntiDestroy = {
     [LF_BANK_DEPOSIT]       = true,
     [LF_GUILDBANK_DEPOSIT]  = true,
     [LF_HOUSE_BANK_DEPOSIT] = true,
-    [LF_CRAFTBAG]           = true,
 }
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!

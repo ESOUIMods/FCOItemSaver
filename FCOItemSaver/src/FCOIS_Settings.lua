@@ -181,7 +181,7 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     if isFilterPanelIdCheckForAntiDestroyNeeded then
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
-
+    --------------------------------------------------------------------------------------------------------------------
     --CraftBag and CraftBagExtended addon
     elseif FCOIS.gFilterWhere == LF_CRAFTBAG then
         --As the CraftBag can be active at the mail send, trade, guild store sell and guild bank panels too we need to check if we are currently using the
@@ -215,7 +215,7 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
             FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
             isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
         end
-
+    --------------------------------------------------------------------------------------------------------------------
     elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
         FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorBuy
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy

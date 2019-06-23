@@ -65,6 +65,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     --Local mapping array for the filter panel ID -> the anti-settings
     local settings = FCOIS.settingsVars.settings
     local protectionSettings = {
+        [LF_CRAFTBAG]   				= settings.blockDestroying,
         [LF_VENDOR_BUY]   				= settings.blockVendorBuy,
         [LF_VENDOR_SELL]   				= settings.blockSelling,
         [LF_VENDOR_BUYBACK]   			= settings.blockVendorBuyback,

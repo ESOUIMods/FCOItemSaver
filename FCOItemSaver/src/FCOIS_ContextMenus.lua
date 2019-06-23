@@ -1922,6 +1922,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
 
     --The mapping table with the LibFilters filterPanelId to block settings
     local libFiltersPanelIdToBlockSettings = {
+        [LF_CRAFTBAG]               = settings.blockDestroying,
         [LF_VENDOR_BUY]             = settings.blockVendorBuy,
         [LF_VENDOR_SELL]            = settings.blockSelling,
         [LF_VENDOR_BUYBACK]         = settings.blockVendorBuyback,
@@ -1964,7 +1965,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
                 currentSettingsState = libFiltersPanelIdToBlockSettings[parentPanel]
             end
         else
-            --Normal craftbag in inventory. Block destroy
+            --Normal craftbag in inventory. Block destroying
             currentSettingsState = libFiltersPanelIdToBlockSettings[p_filterWhere]
         end
     else
