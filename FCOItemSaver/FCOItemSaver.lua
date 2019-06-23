@@ -36,6 +36,11 @@
 --SavedVariables should be saveable for all accounts, if settings to use accountwide are enabled, and copy/delete functions are needed within the settings
 --> See file src/FCOIS_Settings.lua
 
+-- 5) 2019-06-23 - Bugfix - Baertram
+--Split slotCount on mail/trade panels should not do the antimail/trade checks chat output or right upper corner error messages anymore!
+--> e.g. split 20 food marked with the lock icon to 2x10 food -> error message in chat and upper right corner is raised.
+--> See file src/FCOIS_Events.lua, OnInventorySlotLocker and OnInventorySlotUnlocked must check if the split process is used and set a variable to "NOT" show the error messages.
+
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end

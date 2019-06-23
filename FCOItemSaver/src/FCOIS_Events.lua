@@ -613,6 +613,12 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
     FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = true
+    --Is only a "split item" procedure run to split an item stack in the inventory?
+    --Then do not do the anti-/protection checks.
+    if FCOIS.preventerVars.splitItemStackDialogActive then
+        FCOIS.preventerVars.splitItemStackDialogActive = false
+        return false
+    end
 
     --Deconstruction at crafting station?
     if(not ctrlVars.DECONSTRUCTION_BAG:IsHidden() ) then
@@ -621,6 +627,7 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
         if( FCOIS.callDeconstructionSelectionHandler(bag, slot, true) ) then
             --Remove the picked item from drag&drop cursor
             ClearCursor()
+            FCOIS.preventerVars.splitItemStackDialogActive = false
             return false
         end
 
@@ -634,17 +641,21 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
         if( doShowItemBindDialog or FCOIS.callItemSelectionHandler(bag, slot, true, true, false, false, false, false, false) ) then
             --Remove the picked item from drag&drop cursor
             ClearCursor()
+            FCOIS.preventerVars.splitItemStackDialogActive = false
             return false
         else
+            FCOIS.preventerVars.splitItemStackDialogActive = false
             return false
         end
     end
     --Reset: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
     FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
+    FCOIS.preventerVars.splitItemStackDialogActive = false
 end
 
 --Executed if item should be destroyed manually
 local function FCOItemSaver_OnMouseRequestDestroyItem(eventCode, bagId, slotIndex, itemCount, name, needsConfirm)
+    FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 

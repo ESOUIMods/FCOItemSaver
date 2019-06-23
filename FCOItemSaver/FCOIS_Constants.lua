@@ -811,6 +811,7 @@ FCOIS.ZOControlVars.IMPROVEMENT_BUTTON_ARMOR   = ZO_SmithingTopLevelImprovementP
 FCOIS.ZOControlVars.RESEARCH    				= ZO_SmithingTopLevelResearchPanel
 FCOIS.ZOControlVars.RESEARCH_POPUP_TOP_DIVIDER  = ZO_ListDialog1Divider
 FCOIS.ZOControlVars.LIST_DIALOG 	    		= ZO_ListDialog1List
+FCOIS.ZOControlVars.DIALOG_SPLIT_STACK_NAME      = "SPLIT_STACK"
 FCOIS.ZOControlVars.MAIL_SEND					= MAIL_SEND
 FCOIS.ZOControlVars.MAIL_SEND_NAME			    = FCOIS.ZOControlVars.MAIL_SEND.control:GetName()
 FCOIS.ZOControlVars.mailSendSceneName		    = "mailSend"
@@ -1105,6 +1106,8 @@ FCOIS.preventerVars.gClearingMarkerIcons = false
 FCOIS.preventerVars.gMarkItemLastIconInLoop = false
 FCOIS.preventerVars.repairDialogOnRepairKitSelectedOverwrite = false
 FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
+FCOIS.preventerVars.splitItemStackDialogActive = false
+FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -1707,7 +1710,6 @@ FCOIS.checkVars.filterPanelIdsForAntiDestroy = {
     [LF_HOUSE_BANK_DEPOSIT] = true,
     [LF_CRAFTBAG]           = true,
 }
-
 --Table with all equipment slot names which can be updated with markes for the icons
 --The index is the relating slotIndex of the bag BAG_WORN!
 FCOIS.mappingVars.characterEquipmentSlotNameByIndex = {

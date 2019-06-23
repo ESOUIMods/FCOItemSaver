@@ -364,3 +364,10 @@ function FCOIS.showProtectionDialog(titleVar, questionVar, data)
     --Show the dialog now
     ZO_Dialogs_ShowDialog("FCOIS_ASK_PROTECTION_DIALOG", {title=titleVar, question=questionVar, callbackData=callbackData})
 end
+
+--Reset preventer vars and other variables if the ZOs dialog gets closed e.g.
+function FCOIS.resetZOsDialogVariables()
+--d("[FCOIS]resetZOsDialogVariables")
+    local prevVars = FCOIS.preventerVars
+    prevVars.splitItemStackDialogActive = false
+end
