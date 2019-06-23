@@ -345,10 +345,32 @@ d(">numFilteredItemsAtPanel: " .. tostring(numberOfFilteredItems))
     return numberOfFilteredItems
 end
 
+--Get the sort header where the filtered item count should be added as pre-text
+function FCOIS.getSortHeaderControl(filterPanelId)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    local sortHeaderName = FCOIS.sortHeaderVars.name[filterPanelId]
+    local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
+    if sortHeaderCtrl == nil then return nil end
+    return sortHeaderCtrl
+end
+
+--Reset the sort header control for a giveb filterPanelId
+function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+d("[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
+    if sortHeaderCtrlToReset == nil then
+        sortHeaderCtrlToReset = FCOIS.getSortHeaderControl(filterPanelId)
+    end
+    if sortHeaderCtrlToReset == nil then return false end
+    local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
+    sortHeaderCtrlToReset:SetText(origSortHeaderText)
+    return true
+end
+
 --Update the filtered item count at the panel
 function FCOIS.updateFilteredItemCount(panelId)
     panelId = panelId or FCOIS.gFilterWhere
-    d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId))
+d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId))
     FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
     --Is the AddOnAdvancedFilters addon active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
     if AdvancedFilters ~= nil then
@@ -366,44 +388,33 @@ function FCOIS.updateFilteredItemCount(panelId)
     end
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then return end
-    d(">using FCOIS filteredItemCount at sort header")
     --Update the item count at the sort header?
     if panelId == nil then return false end
     local sortHeaderVars = FCOIS.sortHeaderVars
     if not sortHeaderVars or not sortHeaderVars.name or not sortHeaderVars.name[panelId] then
-d("<ERROR: sortHeader variable for filtered itemCount missing")
     return false end
     if not FCOIS.numberOfFilteredItems or not FCOIS.numberOfFilteredItems[panelId] then
-d("<ERROR: numberOfFilteredItems missing for panelId")
     return false end
-    --Get the sort header where the filtered item count should be added as pre-text
-    local sortHeaderName = FCOIS.sortHeaderVars.name[panelId]
-    local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
-    if sortHeaderCtrl == nil then return false end
-    d(">got here 1")
     local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
+    local sortHeaderCtrl = FCOIS.getSortHeaderControl(panelId)
     --Should the item count be shown at the sort header? If not -> Abort here now
     if not FCOIS.settingsVars.settings.showFilteredItemCount then
-    d(">got here 2")
-    --Reset the sortheader text to the original one
-    sortHeaderCtrl:SetText(origSortHeaderText)
-    return false
+        --Reset the sortheader text to the original one
+        FCOIS.resetSortHeaderCount(panelId, sortHeaderCtrl)
+        return false
     end
     --Get the item number of the current inventory, slightly delayed as the filters need to be run first
     zo_callLater(function()
-    d(">got here 3")
-    local numberOfFilteredItems = FCOIS.getFilteredItemCountAtPanel(panelId)
-    if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
-    d(">got here 4")
-    --Reset the sortheader text to the original one
-    sortHeaderCtrl:SetText(origSortHeaderText)
-    return false
-    end
-    d(">got here 5")
-    --Build the new sort header text now: "(<number>) NAME"
-    local preTextIncludingFilteredItemNumber = "(" .. numberOfFilteredItems .. ") "
-    sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
-    end, 100)
+        local numberOfFilteredItems = FCOIS.getFilteredItemCountAtPanel(panelId)
+        if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
+            --Reset the sortheader text to the original one
+            FCOIS.resetSortHeaderCount(panelId, sortHeaderCtrl)
+            return false
+        end
+        --Build the new sort header text now: "(<number>) NAME"
+        local preTextIncludingFilteredItemNumber = "(" .. numberOfFilteredItems .. ") "
+        sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
+    end, 50)
 end
 
 --Add/Change the filter buttons in inventory

@@ -4848,6 +4848,9 @@ function FCOIS.BuildAddonMenu()
                 getFunc = function() return FCOISsettings.showFilteredItemCount end,
                 setFunc = function(value)
                     FCOISsettings.showFilteredItemCount = value
+                    if value == false then
+                        FCOIS.updateFilteredItemCount(LF_INVENTORY)
+                    end
                 end,
                 default = FCOISdefaultSettings.showFilteredItemCount,
             },
