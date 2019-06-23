@@ -774,10 +774,9 @@ FCOIS.ZOControlVars.GUILD_STORE_KEYBOARD	= TRADING_HOUSE
 FCOIS.ZOControlVars.GUILD_STORE				= ZO_TradingHouse
 FCOIS.ZOControlVars.tradingHouseSceneName	= "tradinghouse"
 ------------------------------------------------------------------------------------------------------------------------
---Todo: Remove old controls (in front of the or) after API 100026 Wrathstone has gone live
 --2019-01-26: Support for API 100025 and 100026 controls!
-FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHouseLeftPanePostItemFormInfo or ZO_TradingHousePostItemPaneFormInfo
-FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHouseLeftPanePostItemFormInfoItem or ZO_TradingHousePostItemPaneFormInfoItem
+FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT	= ZO_TradingHousePostItemPaneFormInfo
+FCOIS.ZOControlVars.GUILD_STORE_SELL_SLOT_ITEM	= ZO_TradingHousePostItemPaneFormInfoItem
 ------------------------------------------------------------------------------------------------------------------------
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH = ZO_TradingHouseMenuBarButton1
 FCOIS.ZOControlVars.GUILD_STORE_MENUBAR_BUTTON_SEARCH_NAME = "ZO_TradingHouseMenuBarButton1"
@@ -1683,6 +1682,30 @@ FCOIS.checkVars.researchTraitCheckTraitsNotAllowed = {
     [ITEM_TRAIT_TYPE_ARMOR_ORNATE]      = true,
     [ITEM_TRAIT_TYPE_JEWELRY_ORNATE]    = true,
     [ITEM_TRAIT_TYPE_WEAPON_ORNATE]     = true,
+}
+--The possible checkWere panels for the antiSettings reenable checks
+--See file src/FCOIS_Settings.lua, function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
+FCOIS.checkVars.autoReenableAntiSettingsCheckWheres = {
+    [1] = "CRAFTING_STATION",
+    [2] = "STORE",
+    [3]	= "GUILD_STORE",
+    [4] = "DESTROY",
+    [5] = "TRADE",
+    [6] = "MAIL",
+    [7] = "RETRAIT",
+}
+--The entry for "all" the antisettings reenable panel checks above
+FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll = "-ALL-"
+--The filter panelÍds which need to be checked if anti-destroy is checked
+FCOIS.checkVars.filterPanelIdsForAntiDestroy = {
+    [LF_INVENTORY]          = true,
+    [LF_BANK_WITHDRAW]      = true,
+    [LF_GUILDBANK_WITHDRAW] = true,
+    [LF_HOUSE_BANK_WITHDRAW]= true,
+    [LF_BANK_DEPOSIT]       = true,
+    [LF_GUILDBANK_DEPOSIT]  = true,
+    [LF_HOUSE_BANK_DEPOSIT] = true,
+    [LF_CRAFTBAG]           = true,
 }
 
 --Table with all equipment slot names which can be updated with markes for the icons

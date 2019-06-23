@@ -65,12 +65,6 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     --Local mapping array for the filter panel ID -> the anti-settings
     local settings = FCOIS.settingsVars.settings
     local protectionSettings = {
-        [LF_INVENTORY] 					= settings.blockDestroying,
-        [LF_CRAFTBAG]					= settings.blockDestroying,
-        [LF_BANK_WITHDRAW] 				= settings.blockDestroying,
-        [LF_BANK_DEPOSIT]				= settings.blockDestroying,
-        [LF_GUILDBANK_WITHDRAW] 		= settings.blockDestroying,
-        [LF_GUILDBANK_DEPOSIT]	    	= settings.blockDestroying,
         [LF_VENDOR_BUY]   				= settings.blockVendorBuy,
         [LF_VENDOR_SELL]   				= settings.blockSelling,
         [LF_VENDOR_BUYBACK]   			= settings.blockVendorBuyback,
@@ -94,8 +88,6 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [LF_MAIL_SEND] 					= settings.blockSendingByMail,
         [LF_TRADE] 						= settings.blockTrading,
         [LF_RETRAIT] 					= settings.blockRetrait,
-        [LF_HOUSE_BANK_WITHDRAW] 		= settings.blockDestroying,
-        [LF_HOUSE_BANK_DEPOSIT]			= settings.blockDestroying,
         --Special entries for the call from ItemSelectionHandler() function's variable 'whereAreWe'
         [FCOIS_CON_CONTAINER_AUTOOLOOT]	= settings.blockAutoLootContainer,	--Auto loot container
         [FCOIS_CON_RECIPE_USAGE]		= settings.blockMarkedRecipes, 		--Recipe
@@ -104,6 +96,13 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         [FCOIS_CON_FOOD_USAGE]			= settings.blockMarkedFood, 		--Food
         [FCOIS_CON_CROWN_ITEM]			= settings.blockCrownStoreItems, 	--Crown store item
     }
+    --The filterPanelIds which need to be checked for anti-destroy
+    local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
+    --For each entry in this anti-destroy check table add one line in libFiltersPanelIdToBlockSettings
+    for libFiltersAntiDestroyCheckPanelId, _ in pairs(filterPanelIdsCheckForAntiDestroy) do
+        protectionSettings[libFiltersAntiDestroyCheckPanelId] = settings.blockDestroying
+    end
+
     -- Is CraftBagExtended addon active and are we at a subfilter panel of CBE (e.g. the mail CBE panel, where the anti-mail settings must be checked, and not the craftbag settings)?
     if FCOIS.gFilterWhereParent ~= nil then
         --d("Subfilter active: " .. tostring(FCOIS.gFilterWhereParent))

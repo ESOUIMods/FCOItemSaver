@@ -174,9 +174,11 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     local currentSettings = FCOIS.settingsVars.settings
     local isSettingEnabled = false
 
+    --The filterPanelIds which need to be checked for anti-destroy
+    local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
     --Get the current FCOIS.settingsVars.settings state and inverse them
-    if   FCOIS.gFilterWhere == LF_INVENTORY or FCOIS.gFilterWhere == LF_BANK_WITHDRAW or FCOIS.gFilterWhere == LF_GUILDBANK_WITHDRAW
-        or FCOIS.gFilterWhere == LF_BANK_DEPOSIT or FCOIS.gFilterWhere == LF_GUILDBANK_DEPOSIT or FCOIS.gFilterWhere == LF_HOUSE_BANK_WITHDRAW then
+    local isFilterPanelIdCheckForAntiDestroyNeeded = filterPanelIdsCheckForAntiDestroy[FCOIS.gFilterWhere] or false
+    if isFilterPanelIdCheckForAntiDestroyNeeded then
         FCOIS.settingsVars.settings.blockDestroying = not currentSettings.blockDestroying
         isSettingEnabled = FCOIS.settingsVars.settings.blockDestroying
 
@@ -297,31 +299,25 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
     end
 end
 
---Function to reenable the Anti-* settings again
+--Function to reenable the Anti-* settings again at a given check panel automatically (if the panel closes e.g.)
 function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
     --d("[FCOIS.autoReenableAntiSettingsCheck - checkWhere: " .. tostring(checkWhere) .. ", lootListIsHidden: " .. tostring(ZO_LootAlphaContainerList:IsHidden()) .. ", dontAutoReenableAntiSettings: " .. tostring(FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory))
     if checkWhere == nil or checkWhere == "" then return false end
+    local checksToDo = FCOIS.checkVars.autoReenableAntiSettingsCheckWheres
+    local checksAll = FCOIS.checkVars.autoReenableAntiSettingsCheckWheresAll
     --Should all checks be done now?
-    if checkWhere == "-ALL-" then
-        local checksToDo = {
-            [1] = "CRAFTING_STATION",
-            [2] = "STORE",
-            [3]	= "GUILD_STORE",
-            [4] = "DESTROY",
-            [5] = "TRADE",
-            [6] = "MAIL",
-            [7] = "RETRAIT",
-        }
+    if checkWhere == checksAll then
         --Get the checks to do and run them all after each other
         for _, checkWhereNow in ipairs(checksToDo) do
-            if checkWhereNow ~= "-ALL-" then
+            if checkWhereNow ~= checksAll then
                 FCOIS.autoReenableAntiSettingsCheck(checkWhereNow)
             end
         end
         return true
     end
     local settings = FCOIS.settingsVars.settings
-    if checkWhere == "CRAFTING_STATION" then
+    --"CRAFTING_STATION"?
+    if checkWhere == checksToDo[1]  then
         --Reenable the Anti-Refinement methods if activated in the settings
         if settings.autoReenable_blockRefinement then
             settings.blockRefinement = true
@@ -354,8 +350,8 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockEnchantingExtraction then
             settings.blockEnchantingExtraction = true
         end
-
-    elseif checkWhere == "STORE" then
+    --"STORE"
+    elseif checkWhere == checksToDo[2] then
         --Reenable the Anti-Buy methods if activated in the settings
         if settings.autoReenable_blockVendorBuy then
             settings.blockVendorBuy = true
@@ -380,32 +376,14 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockLaunderSelling then
             settings.blockLaunder = true
         end
-
-    elseif checkWhere == "GUILD_STORE" then
+    --"GUILD_STORE"
+    elseif checkWhere == checksToDo[3] then
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSellingGuildStore then
             settings.blockSellingGuildStore = true
         end
-
-    elseif checkWhere == "MAIL" then
-        --Reenable the Anti-Mail methods if activated in the settings
-        if settings.autoReenable_blockSendingByMail then
-            settings.blockSendingByMail = true
-        end
-
-    elseif checkWhere == "TRADE" then
-        --Reenable the Anti-Trade methods if activated in the settings
-        if settings.autoReenable_blockTrading then
-            settings.blockTrading = true
-        end
-
-    elseif checkWhere == "RETRAIT" then
-        --Reenable the Anti-Retrait methods if activated in the settings
-        if settings.autoReenable_blockRetrait then
-            settings.blockRetrait = true
-        end
-
-    elseif checkWhere == "DESTROY" then
+    --"DESTROY"
+    elseif checkWhere == checksToDo[4] then
         --Reenable the Anti-Destroy methods if activated in the settings
         --but do not enable it as we come back to the inventory from a container loot scene
         if not FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory then
@@ -414,8 +392,27 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
             end
         end
         FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = false
+    --"TRADE"
+    elseif checkWhere == checksToDo[5] then
+        --Reenable the Anti-Trade methods if activated in the settings
+        if settings.autoReenable_blockTrading then
+            settings.blockTrading = true
+        end
+    --"MAIL"
+    elseif checkWhere == checksToDo[6] then
+        --Reenable the Anti-Mail methods if activated in the settings
+        if settings.autoReenable_blockSendingByMail then
+            settings.blockSendingByMail = true
+        end
+    --"RETRAIT"
+    elseif checkWhere == checksToDo[7] then
+        --Reenable the Anti-Retrait methods if activated in the settings
+        if settings.autoReenable_blockRetrait then
+            settings.blockRetrait = true
+        end
     end
     --Workaround to enable the correct additional inventory context menu invoker button color for the normal inventory again
+    --as multiple panels are using the LF_INVENTORY flag (mail, trade, inventory, ...)
     FCOIS.changeContextMenuInvokerButtonColorByPanelId(LF_INVENTORY)
 end
 

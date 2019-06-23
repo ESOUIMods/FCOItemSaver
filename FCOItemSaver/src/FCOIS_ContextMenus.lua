@@ -1922,13 +1922,6 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
 
     --The mapping table with the LibFilters filterPanelId to block settings
     local libFiltersPanelIdToBlockSettings = {
-        [LF_INVENTORY]              = settings.blockDestroying,
-        [LF_BANK_WITHDRAW]          = settings.blockDestroying,
-        [LF_GUILDBANK_WITHDRAW]     = settings.blockDestroying,
-        [LF_HOUSE_BANK_WITHDRAW]    = settings.blockDestroying,
-        [LF_BANK_DEPOSIT]           = settings.blockDestroying,
-        [LF_GUILDBANK_DEPOSIT]      = settings.blockDestroying,
-        [LF_HOUSE_BANK_DEPOSIT]     = settings.blockDestroying,
         [LF_VENDOR_BUY]             = settings.blockVendorBuy,
         [LF_VENDOR_SELL]            = settings.blockSelling,
         [LF_VENDOR_BUYBACK]         = settings.blockVendorBuyback,
@@ -1952,6 +1945,13 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
         [LF_ENCHANTING_EXTRACTION]  = settings.blockEnchantingExtraction,
         [LF_RETRAIT]                = settings.blockRetrait,
     }
+    --The filterPanelIds which need to be checked for anti-destroy
+    local filterPanelIdsCheckForAntiDestroy = FCOIS.checkVars.filterPanelIdsForAntiDestroy
+    --For each entry in this anti-destroy check table add one line in libFiltersPanelIdToBlockSettings
+    for libFiltersAntiDestroyCheckPanelId, _ in pairs(filterPanelIdsCheckForAntiDestroy) do
+        libFiltersPanelIdToBlockSettings[libFiltersAntiDestroyCheckPanelId] = settings.blockDestroying
+    end
+
     local currentSettingsState
     --Special treatment for CraftBag, e.g. for addon CraftBagExtended!
     if p_filterWhere == LF_CRAFTBAG then
@@ -1965,7 +1965,7 @@ function FCOIS.getContextMenuAntiSettingsTextAndState(p_filterWhere, buildText)
             end
         else
             --Normal craftbag in inventory. Block destroy
-            currentSettingsState = settings.blockDestroying
+            currentSettingsState = libFiltersPanelIdToBlockSettings[p_filterWhere]
         end
     else
         --All others: Lookup in mapping table

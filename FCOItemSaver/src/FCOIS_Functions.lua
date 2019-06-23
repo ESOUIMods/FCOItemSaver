@@ -1490,7 +1490,7 @@ function FCOIS.jumpToOwnHouse(backupType, withDetails, apiVersion, doClearBackup
     -->collectibleIndex (e.g. 5)
     --The list of houses in the collections. 1st row should contain the bought ones, 2nd row the locked ones.
     --If you do not own any the 1st row is the locked ones!
-    --Only way to distinguish them is by help of a text: Freigeschaltet/Nicht freigeschaltet
+    --Only way to distinguish them is by help of a text: Unlocked/Locked (German: Freigeschaltet/Nicht freigeschaltet)
     --which is available at: FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1].data (or via function FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]:GetData()) = "Freigeschaltet" (unlocked) / "Nicht freigeschaltet" (locked)
     local housesListInCollections = FCOIS.ZOControlVars.housingBookNavigation.rootNode.children[1]
     if housesListInCollections ~= nil then
