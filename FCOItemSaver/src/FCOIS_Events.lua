@@ -776,6 +776,9 @@ local function FCOItemSaver_Player_Activated(...)
             zo_callLater(function() scanInventory() end, 500)
         end
 
+        --Update the itemCount in the inventory sort headers, if needed
+        FCOIS.updateFilteredItemCount(LF_INVENTORY)
+
         FCOIS.addonVars.gPlayerActivated = true
 
         --Check if something should be done at player activated event

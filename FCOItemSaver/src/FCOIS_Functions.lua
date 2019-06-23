@@ -7,6 +7,21 @@ if not FCOIS.libsLoadedProperly then return end
 local ctrlVars = FCOIS.ZOControlVars
 
 --==========================================================================================================================================
+--                                          FCOIS - Base & helper functions
+--==========================================================================================================================================
+--A throttle updater function to run updates not too ofter
+function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
+    local args = {...}
+    local function Update()
+        EVENT_MANAGER:UnregisterForUpdate(callbackName)
+        callback(unpack(args))
+    end
+    EVENT_MANAGER:UnregisterForUpdate(callbackName)
+    EVENT_MANAGER:RegisterForUpdate(callbackName, timer, Update)
+end
+
+
+--==========================================================================================================================================
 --                                          FCOIS - Is, Get, Set functions
 --==========================================================================================================================================
 

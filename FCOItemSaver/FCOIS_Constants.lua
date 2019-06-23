@@ -710,6 +710,35 @@ FCOIS.craftingPrevention.extractSlot = nil
 FCOIS.craftingPrevention.extractWhereAreWe = nil
 
 FCOIS.ZOControlVars = {}
+--Inventories and their searchBox controls
+local inventories =
+{
+    [INVENTORY_BACKPACK] =
+    {
+        searchBox = ZO_PlayerInventorySearchBox,
+    },
+    [INVENTORY_QUEST_ITEM] =
+    {
+        searchBox = ZO_PlayerInventorySearchBox,
+    },
+    [INVENTORY_BANK] =
+    {
+        searchBox = ZO_PlayerBankSearchBox,
+    },
+    [INVENTORY_HOUSE_BANK] =
+    {
+        searchBox = ZO_HouseBankSearchBox,
+    },
+    [INVENTORY_GUILD_BANK] =
+    {
+        searchBox = ZO_GuildBankSearchBox,
+    },
+    [INVENTORY_CRAFT_BAG] =
+    {
+        searchBox = ZO_CraftBagSearchBox,
+    },
+}
+FCOIS.ZOControlVars.inventories = inventories
 --Control names of ZO* standard controls etc.
 FCOIS.ZOControlVars.FCOISfilterButtonNames = {
  [FCOIS_CON_FILTER_BUTTON_LOCKDYN] 		= "ZO_PlayerInventory_FilterButton1",

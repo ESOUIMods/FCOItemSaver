@@ -1040,3 +1040,29 @@ function FCOIS.checkIfChosenResearchAddonActive(researchAddonId)
     end
     return retVar
 end
+
+
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+-- AdvancedFilters (Updated)
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+--Check if the itemCount addition to the invenmtory bagSpace is enabled in teh AdvancedFilters settings
+function FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
+    --Is the AddOnAdvancedFilters addon active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
+    if AdvancedFilters ~= nil then
+        local AF = AdvancedFilters
+        local afUtil = AF.util
+        if afUtil.updateInventoryInfoBarCountLabel ~= nil then
+            --AdvancedFilters settings to hide the itemsount in the inventories is disabled?
+            if AF.settings and AF.settings.hideItemCount == false then
+                FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = true
+                return true
+            end
+        end
+    end
+    return false
+end
