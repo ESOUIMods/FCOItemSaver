@@ -1108,6 +1108,7 @@ FCOIS.preventerVars.repairDialogOnRepairKitSelectedOverwrite = false
 FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
 FCOIS.preventerVars.splitItemStackDialogActive = false
 FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = false
+FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -2175,11 +2176,8 @@ FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 
 --Constants for the filter item number sort header entries "name" at the filter panels
 FCOIS.sortHeaderVars = {}
---The sort header name lookup table
-FCOIS.sortHeaderVars.name = {}
-local sortHeaderNames = FCOIS.sortHeaderVars.name
 local sortByNameNameStr = "SortByNameName"
-sortHeaderNames = {
+local sortHeaderNames = {
     [LF_INVENTORY]              = "ZO_PlayerInventory" .. sortByNameNameStr,
     [LF_VENDOR_BUY]             = "ZO_StoreWindow" .. sortByNameNameStr,
     [LF_VENDOR_BUYBACK]         = "ZO_BuyBack" .. sortByNameNameStr,
@@ -2208,6 +2206,8 @@ sortHeaderNames[LF_JEWELRY_REFINE]         = sortHeaderNames[LF_SMITHING_REFINE]
 sortHeaderNames[LF_JEWELRY_DECONSTRUCT]    = sortHeaderNames[LF_SMITHING_DECONSTRUCT]
 sortHeaderNames[LF_JEWELRY_IMPROVEMENT]    = sortHeaderNames[LF_SMITHING_IMPROVEMENT]
 sortHeaderNames[LF_ENCHANTING_EXTRACTION]  = sortHeaderNames[LF_ENCHANTING_CREATION]
+--The sort header name lookup table
+FCOIS.sortHeaderVars.name = sortHeaderNames
 
 --The variable containing the number of filtered items at the different panels
 FCOIS.numberOfFilteredItems = {}

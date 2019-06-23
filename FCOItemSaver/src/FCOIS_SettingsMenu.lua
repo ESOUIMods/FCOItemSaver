@@ -4841,8 +4841,6 @@ function FCOIS.BuildAddonMenu()
             } -- controls filter buttons
 	    }, -- submenu filter buttons
 
---[[
---TODO: Enable later again!
             {
                 type = "checkbox",
                 name = locVars["options_enable_filtered_item_count"],
@@ -4853,7 +4851,6 @@ function FCOIS.BuildAddonMenu()
                 end,
                 default = FCOISdefaultSettings.showFilteredItemCount,
             },
-]]
 
         } -- controls ALL filters
 	}, -- submenu ALL filters

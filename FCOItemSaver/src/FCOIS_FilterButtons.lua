@@ -332,56 +332,78 @@ function FCOIS.PreHookButtonHandler(comingFrom, goingTo)
     return false
 end
 
+--Get the currently shown items count of the filterPanelId
+function FCOIS.getFilteredItemCountAtPanel(filterPanelId)
+    filterPanelId = filterPanelId or FCOIS.gFilterWhere
+d("[FCOIS]getFilteredItemCountAtPanel, filterPanelId: " .. tostring(filterPanelId))
+    local filteredItemsArray = FCOIS.numberOfFilteredItems[filterPanelId]
+    if filteredItemsArray == nil then return 0 end
+d(">1")
+    local numberOfFilteredItems = #filteredItemsArray
+d(">numFilteredItemsAtPanel: " .. tostring(numberOfFilteredItems))
+    if not numberOfFilteredItems then return 0 end
+    return numberOfFilteredItems
+end
+
 --Update the filtered item count at the panel
 function FCOIS.updateFilteredItemCount(panelId)
     panelId = panelId or FCOIS.gFilterWhere
---d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId))
-    --Is the AddOnAdvancedFilters active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
-    if AdvancedFilters ~= nil and AdvancedFilters.util ~= nil then
-        local afUtil = AdvancedFilters.util
+    d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId))
+    FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
+    --Is the AddOnAdvancedFilters addon active and the function to refresh the shown item count below the inventory, at the "FreeSlot" label exists
+    if AdvancedFilters ~= nil then
+        local AF = AdvancedFilters
+        local afUtil = AF.util
         if afUtil.updateInventoryInfoBarCountLabel ~= nil then
-            zo_callLater(function()
-                afUtil.updateInventoryInfoBarCountLabel()
-            end, 50)
+            --AdvancedFilters settings to hide the itemsount in the inventories is disabled?
+            if AF.settings and AF.settings.hideItemCount == false then
+                FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = true
+                zo_callLater(function()
+                    afUtil.updateInventoryInfoBarCountLabel()
+                end, 50)
+            end
         end
     end
-
-    --[[
-    --TODO: Enable again later if changes of AdvancedFilters can be recognized and if changes from within one panel (e.g. improvement) between weapons & armor can be recognized
-	--AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters is enabled!
-    local abort = true
-    if abort then return false end
-
+    --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
+    if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then return end
+    d(">using FCOIS filteredItemCount at sort header")
     --Update the item count at the sort header?
     if panelId == nil then return false end
-    if not FCOIS.sortHeaderVars or not FCOIS.sortHeaderVars.name or not FCOIS.sortHeaderVars.name[panelId]
-            or not FCOIS.numberOfFilteredItems or not FCOIS.numberOfFilteredItems[panelId] then return false end
+    local sortHeaderVars = FCOIS.sortHeaderVars
+    if not sortHeaderVars or not sortHeaderVars.name or not sortHeaderVars.name[panelId] then
+d("<ERROR: sortHeader variable for filtered itemCount missing")
+    return false end
+    if not FCOIS.numberOfFilteredItems or not FCOIS.numberOfFilteredItems[panelId] then
+d("<ERROR: numberOfFilteredItems missing for panelId")
+    return false end
     --Get the sort header where the filtered item count should be added as pre-text
     local sortHeaderName = FCOIS.sortHeaderVars.name[panelId]
     local sortHeaderCtrl = WINDOW_MANAGER:GetControlByName(sortHeaderName, "")
     if sortHeaderCtrl == nil then return false end
+    d(">got here 1")
     local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
     --Should the item count be shown at the sort header? If not -> Abort here now
     if not FCOIS.settingsVars.settings.showFilteredItemCount then
-        --Reset the sortheader text to the original one
-        sortHeaderCtrl:SetText(origSortHeaderText)
-        return false
+    d(">got here 2")
+    --Reset the sortheader text to the original one
+    sortHeaderCtrl:SetText(origSortHeaderText)
+    return false
     end
     --Get the item number of the current inventory, slightly delayed as the filters need to be run first
     zo_callLater(function()
-        local filteredItemsArray = FCOIS.numberOfFilteredItems[panelId]
-        if filteredItemsArray == nil then return false end
-        local numberOfFilteredItems = #filteredItemsArray
-        if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
-            --Reset the sortheader text to the original one
-            sortHeaderCtrl:SetText(origSortHeaderText)
-            return false
-        end
-        --Build the new sort header text now: "(<number>) NAME"
-        local preTextIncludingFilteredItemNumber = "(" .. numberOfFilteredItems .. ")"
-        sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. " " .. origSortHeaderText)
+    d(">got here 3")
+    local numberOfFilteredItems = FCOIS.getFilteredItemCountAtPanel(panelId)
+    if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
+    d(">got here 4")
+    --Reset the sortheader text to the original one
+    sortHeaderCtrl:SetText(origSortHeaderText)
+    return false
+    end
+    d(">got here 5")
+    --Build the new sort header text now: "(<number>) NAME"
+    local preTextIncludingFilteredItemNumber = "(" .. numberOfFilteredItems .. ") "
+    sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
     end, 100)
-    ]]
 end
 
 --Add/Change the filter buttons in inventory
