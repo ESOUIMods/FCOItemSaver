@@ -31,6 +31,7 @@ function FCOIS.getNumberOfFilteredItemsForEachPanel()
     FCOIS.numberOfFilteredItems[LF_TRADE]                  = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_GUILDSTORE_SELL]        = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_BANK_DEPOSIT]           = numFilterdItemsInv
+    FCOIS.numberOfFilteredItems[LF_GUILDBANK_DEPOSIT]      = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_VENDOR_BUY]             = 0 -- TODO: Add as filter panel gets supported
     FCOIS.numberOfFilteredItems[LF_VENDOR_SELL]            = numFilterdItemsInv
     FCOIS.numberOfFilteredItems[LF_VENDOR_BUYBACK]         = 0 -- TODO: Add as filter panel gets supported
