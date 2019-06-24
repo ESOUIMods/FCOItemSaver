@@ -1358,6 +1358,9 @@ function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
     else
         d("[FCOIS]inventoryChangeFilterHook")
     end
+    --Only go on if the update for the item count is for the currently visible filterPanelId
+    if filterPanelId ~= FCOIS.gFilterWhere then
+        return end
     FCOIS.updateFilteredItemCount(filterPanelId)
 end
 
@@ -1366,7 +1369,9 @@ end
 function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     delay = delay or 250
-d("[FCOIS]updateFilteredItemCountThrottled")
+--d("[FCOIS]updateFilteredItemCountThrottled, filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
+    --Only go on if the update for the item count is for the currently visible filterPanelId
+    if filterPanelId ~= FCOIS.gFilterWhere then return end
     --Update the count of filtered/shown items before the sortHeader "name" text
     FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, FCOIS.inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled")
 end
@@ -1385,7 +1390,7 @@ function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventory
     else
         filteredItemsArray = FCOIS.numberOfFilteredItems[libFiltersPanelId]
     end
-d("[FCOIS]getFilteredItemCountAtPanel, filterPanelId: " .. tostring(libFiltersPanelId) .. ", inventoryType: " .. tostring(panelIdOrInventoryTypeString))
+--d("[FCOIS]getFilteredItemCountAtPanel, filterPanelId: " .. tostring(libFiltersPanelId) .. ", inventoryType: " .. tostring(panelIdOrInventoryTypeString))
     if filteredItemsArray == nil then
         return 0 end
     numberOfFilteredItems = #filteredItemsArray
@@ -1405,7 +1410,7 @@ end
 --Reset the sort header control for a giveb filterPanelId
 function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
-d("[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
+--d("[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
     if sortHeaderCtrlToReset == nil then
         sortHeaderCtrlToReset = FCOIS.getSortHeaderControl(filterPanelId)
     end
@@ -1423,7 +1428,7 @@ function FCOIS.updateFilteredItemCount(panelId)
     if panelId == "INVENTORY_QUEST_ITEM" then
         libFiltersPanelId = LF_INVENTORY
     end
-d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId))
+--d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId))
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
     FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then

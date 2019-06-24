@@ -11,7 +11,7 @@ local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
 --A throttle updater function to run updates not too ofter
 function FCOIS.ThrottledUpdate(callbackName, timer, callback, ...)
-d("[FCOIS]ThrottledUpdate, callbackName: " .. tostring(callbackName))
+--d("[FCOIS]ThrottledUpdate, callbackName: " .. tostring(callbackName))
     local args = {...}
     local function Update()
         EVENT_MANAGER:UnregisterForUpdate(callbackName)
