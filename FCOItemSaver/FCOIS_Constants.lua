@@ -2228,6 +2228,7 @@ sortHeaderNames[LF_MAIL_SEND]              = sortHeaderInventoryName
 sortHeaderNames[LF_TRADE]                  = sortHeaderInventoryName
 sortHeaderNames[LF_GUILDSTORE_SELL]        = sortHeaderInventoryName
 sortHeaderNames[LF_BANK_DEPOSIT]           = sortHeaderInventoryName
+sortHeaderNames[LF_GUILDBANK_DEPOSIT]      = sortHeaderInventoryName
 sortHeaderNames[LF_VENDOR_SELL]            = sortHeaderInventoryName
 sortHeaderNames[LF_FENCE_SELL]             = sortHeaderInventoryName
 sortHeaderNames[LF_FENCE_LAUNDER]          = sortHeaderInventoryName
