@@ -1862,24 +1862,32 @@ function FCOIS.CreateHooks()
     end)
 
     --======== Hooks at the inventory and crafting filter functions ==================================
-    ZO_PreHook(PLAYER_INVENTORY, "ChangeFilter", function() d("[FCOIS]Player_Iiventory ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(SMITHING.refinementPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing refine ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(SMITHING.deconstructionPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing deconstruction ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(SMITHING.improvementPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing improvement ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(ZO_RETRAIT_STATION_KEYBOARD.retraitPanel.inventory, "ChangeFilter", function() d("[FCOIS]Retrait ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(ENCHANTING.inventory, "ChangeFilter", function() d("[FCOIS]Enchanting ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
-    ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", function() d("[FCOIS]QuickSLot ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(PLAYER_INVENTORY, "ChangeFilter", function() d("[FCOIS]Player_Inventory ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(SMITHING.refinementPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing refine ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(SMITHING.deconstructionPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing deconstruction ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(SMITHING.improvementPanel.inventory, "ChangeFilter", function() d("[FCOIS]Smithing improvement ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(ZO_RETRAIT_STATION_KEYBOARD.retraitPanel.inventory, "ChangeFilter", function() d("[FCOIS]Retrait ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(ENCHANTING.inventory, "ChangeFilter", function() d("[FCOIS]Enchanting ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
+    --ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", function() d("[FCOIS]QuickSLot ChangeFilter") FCOIS.inventoryChangeFilterHook() end)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
+    --PreHook the QuickSlotWindow change filter function
+    local function ChangeFilterQuickSlot(self, filterData)
+        FCOIS.updateFilteredItemCountThrottled(LF_QUICKSLOT, 50)
+    end
+    ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", ChangeFilterQuickSlot)
     ZO_PreHook(ZO_InventoryManager, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
-d("[FCOIS]ZO_InventoryManager UpdateEmptyBagLabel")
+d("[FCOIS]ZO_InventoryManager, UpdateEmptyBagLabel")
         --Check if AdvancedFilters addon is active and setting to show itemCount as well?
         -->Then abort here
         if FCOIS.checkIfAdvancedFiltersItemCountIsEnabled() then return false end
+d(">AF disabled")
         local inventories = ctrlVars.inventories
         if not inventories then return false end
         --Check if the currently active focus in inside a search box
         local inventory = inventories[inventoryType]
         local searchBox
+        --Normal inventory update without searchBox changed
+        local delay = 50
         if inventory then
             local goOn = false
             local searchBoxIsEmpty = false
@@ -1897,15 +1905,26 @@ d("[FCOIS]ZO_InventoryManager UpdateEmptyBagLabel")
                     end
                 end
             end
-            if not searchBoxIsEmpty then
+            --SearchBox exists and is not empty
+            if searchBox and not searchBoxIsEmpty then
+                --Delay for search box updated
+                delay = 250
+                goOn = true
+            elseif not searchBox or (searchBox and searchBoxIsEmpty) then
+                --Delay for normal label update
+                delay = 50
                 goOn = true
             end
             if not goOn then return false end
-            --d("[FCOIS]UpdateEmptyBagLabel, isEmptyList: " ..tostring(isEmptyList))
-            --Update the count of filtered/shown items before the sortHeader "name" text
-            FCOIS.ThrottledUpdate("FCOIS_RefreshItemCount_" .. inventoryType,
-                    250, FCOIS.inventoryChangeFilterHook, inventoryType)
         end
+        --d("[FCOIS]UpdateEmptyBagLabel, isEmptyList: " ..tostring(isEmptyList))
+        --Update the count of filtered/shown items before the sortHeader "name" text
+        local filterPanelId  = FCOIS.gFilterWhere
+        --Special checks for the filterPanelId, for e.g. "QUEST items"
+        if inventoryType == INVENTORY_QUEST_ITEM then
+            filterPanelId = "INVENTORY_QUEST_ITEM"
+        end
+        FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay)
     end)
 
     --======== TEST HOOKS =============================================================================

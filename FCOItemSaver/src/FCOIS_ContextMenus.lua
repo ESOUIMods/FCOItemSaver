@@ -481,7 +481,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local isDynamic = isDynamicIcon[markId] or false
     local isGear = isGearIcon[markId] or false
     local isResearchAble = researchableIcons[markId] or false
-    local notAllowed = (notAllowedParentCtrls[parentName] or notAllowedCtls[controlName]) or false
+    local notAllowed = false
+    local notAllowedCollectible = false
+    local dataEntryOfControl = rowControl.dataEntry
+    if dataEntryOfControl and dataEntryOfControl.data then
+        notAllowedCollectible = (dataEntryOfControl.data.collectibleId ~= nil) or false
+    end
+    notAllowed = (notAllowedCollectible or notAllowedParentCtrls[parentName] or notAllowedCtls[controlName]) or false
     local allowedCharCtrl = allowedCharacterCtrls[controlName] or false
     local allowedCharJewelryControl = allowedCharacterJewelryControls[controlName] or false
     local doCheckOnlyUnbound = settings.allowOnlyUnbound[markId]
@@ -540,7 +546,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --===========================================================================================================
     --Check if the right click menu should be updated. Only allowed panels and menus apply!
     -- Check two tables for parent and control names. If current control and parent are not in the relating table
-    -- the contextmenu will be enhanced with FCOItemSaver entries
+    -- the contextmenu will be enhanced with FCOItemSaver entries.
+    --And check it the item is a collectibel (in quickslots e.g.) and then do not allow the FCOIS context menus
     if (notAllowed) then
         --Not allowed parent or control is given -> Abort here
         if firstAdd then

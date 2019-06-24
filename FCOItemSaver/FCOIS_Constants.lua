@@ -2221,6 +2221,7 @@ local sortHeaderNames = {
     [LF_CRAFTBAG]               = "ZO_CraftBag" .. sortByNameNameStr,
     [LF_RETRAIT]                = "ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventory" .. sortByNameNameStr,
     [LF_HOUSE_BANK_WITHDRAW]	= "ZO_HouseBank" .. sortByNameNameStr,
+    [LF_QUICKSLOT]              = "ZO_QuickSlot" .. sortByNameNameStr,
 }
 local sortHeaderInventoryName = sortHeaderNames[LF_INVENTORY]
 sortHeaderNames[LF_MAIL_SEND]              = sortHeaderInventoryName
