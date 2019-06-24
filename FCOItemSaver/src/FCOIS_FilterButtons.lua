@@ -1353,11 +1353,13 @@ end
 -->Will be called each time an inventory filter changes, e.g. from All to Armor, or from Weapons to Materials
 function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
+    --[[
     if calledFrom ~= nil then
         d("[FCOIS]inventoryChangeFilterHook, calledFrom: " .. tostring(calledFrom))
     else
         d("[FCOIS]inventoryChangeFilterHook")
     end
+    ]]
     --Only go on if the update for the item count is for the currently visible filterPanelId
     if filterPanelId ~= FCOIS.gFilterWhere then
         return end
