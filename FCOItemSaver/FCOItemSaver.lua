@@ -59,8 +59,8 @@ function FCOIS.FCOItemSaver_CheckGamePadMode()
         if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
-            if FCOIS.preventerVars.noGamePadMoudeSupportTextOutput == false then
-                FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = true
+            if FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then
+                FCOIS.preventerVars.noGamePadModeSupportTextOutput = true
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
                     ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",

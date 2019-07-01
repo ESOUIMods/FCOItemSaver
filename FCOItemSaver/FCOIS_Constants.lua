@@ -6,8 +6,8 @@ local FCOIS = FCOIS
 --Addon variables
 FCOIS.addonVars = {}
 --Addon variables
-FCOIS.addonVars.addonVersionOptions 		= '1.5.8' -- version shown in the settings panel
-FCOIS.addonVars.addonVersionOptionsNumber	= 1.58
+FCOIS.addonVars.addonVersionOptions 		= '1.5.9' -- version shown in the settings panel
+FCOIS.addonVars.addonVersionOptionsNumber	= 1.59
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
@@ -1115,7 +1115,7 @@ FCOIS.preventerVars.dontShowInvContextMenu = false
 FCOIS.preventerVars.markItemAntiEndlessLoop = false
 FCOIS.preventerVars.dontAutoReenableAntiSettingsInInventory = false
 FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
-FCOIS.preventerVars.noGamePadMoudeSupportTextOutput = false
+FCOIS.preventerVars.noGamePadModeSupportTextOutput = false
 FCOIS.preventerVars.contextMenuUpdateLoopLastLoop = false
 FCOIS.preventerVars.doNotScanInv = false
 FCOIS.preventerVars.migrateItemMarkers = false
