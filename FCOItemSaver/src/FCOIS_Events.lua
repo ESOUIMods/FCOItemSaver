@@ -2,7 +2,7 @@
 if FCOIS == nil then FCOIS = {} end
 local FCOIS = FCOIS
 
-local addonName = FCOIS.addonVars.gAddonName
+local gAddonName = FCOIS.addonVars.gAddonName
 local ctrlVars = FCOIS.ZOControlVars
 --==========================================================================================================================================
 --													FCOIS EVENT callback functions
@@ -778,7 +778,7 @@ local function FCOItemSaver_Player_Activated(...)
         end
 
         --Update the itemCount in the inventory sort headers, if needed
-        FCOIS.updateFilteredItemCount(LF_INVENTORY)
+        FCOIS.updateFilteredItemCountThrottled(LF_INVENTORY, 50, "EVENT_Player_Activated")
 
         FCOIS.addonVars.gPlayerActivated = true
 

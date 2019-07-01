@@ -1865,16 +1865,16 @@ function FCOIS.CreateHooks()
     --Player Inventory
     --ZO_PreHook(PLAYER_INVENTORY, "ChangeFilter", function() d("[FCOIS]Player_Inventory ChangeFilter") FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay) end)
     --Smithing
-    ZO_PreHook(SMITHING.refinementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
-    ZO_PreHook(SMITHING.deconstructionPanel.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
-    ZO_PreHook(SMITHING.improvementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
+    ZO_PreHook(SMITHING.refinementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing refine - ChangeFilter") end)
+    ZO_PreHook(SMITHING.deconstructionPanel.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing decon - ChangeFilter") end)
+    ZO_PreHook(SMITHING.improvementPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Smithing improve - ChangeFilter") end)
     --Retrait
-    ZO_PreHook(ZO_RETRAIT_STATION_KEYBOARD.retraitPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
+    ZO_PreHook(ZO_RETRAIT_STATION_KEYBOARD.retraitPanel.inventory, "ChangeFilter", function() FCOIS.updateFilteredItemCountThrottled(nil, 50, "Retrait - ChangeFilter") end)
     --Enchanting
-    ZO_PreHook(ENCHANTING.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
+    ZO_PreHook(ENCHANTING.inventory, "ChangeFilter", function()  FCOIS.updateFilteredItemCountThrottled(nil, 50, "Enchanting - ChangeFilter") end)
     --PreHook the QuickSlotWindow change filter function
     local function ChangeFilterQuickSlot(self, filterData)
-        FCOIS.updateFilteredItemCountThrottled(LF_QUICKSLOT, 50)
+        FCOIS.updateFilteredItemCountThrottled(LF_QUICKSLOT, 50, "Quickslots - ChangeFilter")
     end
     ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", ChangeFilterQuickSlot)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
@@ -1925,10 +1925,19 @@ function FCOIS.CreateHooks()
         if inventoryType == INVENTORY_QUEST_ITEM then
             filterPanelId = "INVENTORY_QUEST_ITEM"
         end
-        FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay)
+        FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, "ZO_InventoryManager - UpdateEmptyBagLabel")
     end)
     --Update inventory slot labels
-    ZO_PreHook("UpdateInventorySlots", function() FCOIS.updateFilteredItemCountThrottled(nil, 50) end)
+    ZO_PreHook("UpdateInventorySlots", function()
+d("[FCOIS]UpdateInventorySlots")
+        --This variable is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount if the addon AdvancedFilters is used,
+        --and the AF itemCount is enabled (next to the inventory free slots labels), and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
+        -->Otherwise we would create an endless loop here which will be AF.util.updateInventoryInfoBarCountLabel -> UpdateInventorySlots ->
+        --PreHook in FCOIS to function UpdateInventorySlots -> FCOIS.updateFilteredItemCountThrottled -> FCOIS.updateFilteredItemCount -> AF.util.updateInventoryInfoBarCountLabel ...
+        if not FCOIS.preventerVars.dontUpdateFilteredItemCount then
+            FCOIS.updateFilteredItemCountThrottled(nil, 50, "UpdateInventorySlots")
+        end
+    end)
 
     --======== TEST HOOKS =============================================================================
     --Call some test hooks

@@ -1363,19 +1363,20 @@ function FCOIS.inventoryChangeFilterHook(filterPanelId, calledFrom)
     --Only go on if the update for the item count is for the currently visible filterPanelId
     if filterPanelId ~= FCOIS.gFilterWhere then
         return end
-    FCOIS.updateFilteredItemCount(filterPanelId)
+    FCOIS.updateFilteredItemCount(filterPanelId, calledFrom)
 end
 
 --Update the shown filteredItem count at the inventories, but throttled with a delay and only once if updates are tried
 --to be done several times after another
-function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay)
+function FCOIS.updateFilteredItemCountThrottled(filterPanelId, delay, calledFromWhere)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
     delay = delay or 250
---d("[FCOIS]updateFilteredItemCountThrottled, filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
+    calledFromWhere = calledFromWhere or ""
+d("[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere .. " - filterPanelId: " ..tostring(filterPanelId) .. ", delay: " ..tostring(delay))
     --Only go on if the update for the item count is for the currently visible filterPanelId
     if filterPanelId ~= FCOIS.gFilterWhere then return end
     --Update the count of filtered/shown items before the sortHeader "name" text
-    FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, FCOIS.inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled")
+    FCOIS.ThrottledUpdate("FCOIS_UpdateItemCount_" .. filterPanelId, delay, FCOIS.inventoryChangeFilterHook, filterPanelId, "[FCOIS]updateFilteredItemCountThrottled->" .. calledFromWhere)
 end
 
 --Get the currently shown items count of the filterPanelId
@@ -1412,7 +1413,7 @@ end
 --Reset the sort header control for a giveb filterPanelId
 function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
     filterPanelId = filterPanelId or FCOIS.gFilterWhere
---d("[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
+d(">>[FCOIS]resetSortHeaderCount, filterPanelId: " .. tostring(filterPanelId))
     if sortHeaderCtrlToReset == nil then
         sortHeaderCtrlToReset = FCOIS.getSortHeaderControl(filterPanelId)
     end
@@ -1423,23 +1424,36 @@ function FCOIS.resetSortHeaderCount(filterPanelId, sortHeaderCtrlToReset)
 end
 
 --Update the filtered item count at the panel
-function FCOIS.updateFilteredItemCount(panelId)
+function FCOIS.updateFilteredItemCount(panelId, calledFrom)
     panelId = panelId or FCOIS.gFilterWhere
+    calledFrom = calledFrom or ""
     local libFiltersPanelId = panelId
     --Special checks for the non supported filterPanelIds (Inventory types) liek quest items
     if panelId == "INVENTORY_QUEST_ITEM" then
         libFiltersPanelId = LF_INVENTORY
     end
---d("[FCOIS]updateFilteredItemCount, panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId))
+    local showFilteredItemCount = FCOIS.settingsVars.settings.showFilteredItemCount
+d(">[FCOIS]updateFilteredItemCount->".. calledFrom .. " - panelId: " ..tostring(panelId) .. ", libFiltersPanelId: " ..tostring(libFiltersPanelId) .. ", showFilteredItemCount: " .. tostring(showFilteredItemCount))
+    local sortHeaderCtrl = FCOIS.getSortHeaderControl(libFiltersPanelId)
+    --Reset the sortheader text to the original one
+    FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl)
     --AdvancedFilters version 1.5.0.6 adds filtered item count at the bottom inventory lines. So FCOIS does not need to show this anymore if AdvancedFilters has enabled this setting.
     FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = FCOIS.checkIfAdvancedFiltersItemCountIsEnabled()
     if FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories then
+        d(">>>[AF]filtered itemCount is used -> FCOIS aborting item count output")
+        --Update the AdvancedFilters item count
         zo_callLater(function()
+            d(">called later:")
             local afUtil = AdvancedFilters.util
-            afUtil.updateInventoryInfoBarCountLabel()
+            if afUtil.UpdateCraftingInventoryFilteredCount then
+                FCOIS.preventerVars.dontUpdateFilteredItemCount = true
+                afUtil.UpdateCraftingInventoryFilteredCount(nil) --invType: nil
+                FCOIS.preventerVars.dontUpdateFilteredItemCount = false
+            end
         end, 50)
-        return
     end
+    --Should the item count be shown at the name sort header? If not -> Abort here now
+    if not showFilteredItemCount then return false end
     --Update the item count at the sort header?
     if libFiltersPanelId == nil then return false end
     local sortHeaderVars = FCOIS.sortHeaderVars
@@ -1447,24 +1461,16 @@ function FCOIS.updateFilteredItemCount(panelId)
         return false end
     if not FCOIS.numberOfFilteredItems or not FCOIS.numberOfFilteredItems[libFiltersPanelId] then
         return false end
-    local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
-    local sortHeaderCtrl = FCOIS.getSortHeaderControl(libFiltersPanelId)
-    --Should the item count be shown at the sort header? If not -> Abort here now
-    if not FCOIS.settingsVars.settings.showFilteredItemCount then
-        --Reset the sortheader text to the original one
-        FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl)
-        return false
-    end
     --Get the item number of the current inventory, slightly delayed as the filters need to be run first
     zo_callLater(function()
         local numberOfFilteredItems = FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelId)
         if not numberOfFilteredItems or numberOfFilteredItems <= 0 then
-            --Reset the sortheader text to the original one
-            FCOIS.resetSortHeaderCount(libFiltersPanelId, sortHeaderCtrl)
+            --Sortheader text was reset already at the beginning of this function -> Abort here now
             return false
         end
         --Build the new sort header text now: "(<number>) NAME"
         local preTextIncludingFilteredItemNumber = "(" .. numberOfFilteredItems .. ") "
+        local origSortHeaderText = GetString(SI_INVENTORY_SORT_TYPE_NAME)
         sortHeaderCtrl:SetText(preTextIncludingFilteredItemNumber .. origSortHeaderText)
     end, 50)
 end

@@ -1138,6 +1138,7 @@ FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
 FCOIS.preventerVars.splitItemStackDialogActive = false
 FCOIS.preventerVars.splitItemStackDialogButtonCallbacks = false
 FCOIS.preventerVars.useAdvancedFiltersItemCountInInventories = false
+FCOIS.preventerVars.dontUpdateFilteredItemCount = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}

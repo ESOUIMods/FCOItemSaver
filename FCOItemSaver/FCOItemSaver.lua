@@ -41,6 +41,19 @@
 --> e.g. split 20 food marked with the lock icon to 2x10 food -> error message in chat and upper right corner is raised.
 --> See file src/FCOIS_Events.lua, OnInventorySlotLocker and OnInventorySlotUnlocked must check if the split process is used and set a variable to "NOT" show the error messages.
 
+
+--Changelog since last version 1.5.8
+--Fixed:
+--Bugfix for 5) Split slotCount on mail/trade panels should not do the antimail/trade checks chat output or right upper corner error messages anymore!
+--
+--Added:
+--Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
+--Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
+--If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
+--
+--Added on request:
+--SavedVariables can be enabled for all acounts the same
+
 ------------------------------------------------------------------
 --Global array with all data of this addon
 if FCOIS == nil then FCOIS = {} end
