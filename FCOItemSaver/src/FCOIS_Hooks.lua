@@ -1879,9 +1879,6 @@ function FCOIS.CreateHooks()
     ZO_PreHook(QUICKSLOT_WINDOW, "ChangeFilter", ChangeFilterQuickSlot)
     --Update the count of items filtered if text search boxes are used (ZOs or Votans Search Box)
     ZO_PreHook(ZO_InventoryManager, "UpdateEmptyBagLabel", function(ctrl, inventoryType, isEmptyList)
-        --Check if AdvancedFilters addon is active and setting to show itemCount as well?
-        -->Then abort here
-        if FCOIS.checkIfAdvancedFiltersItemCountIsEnabled() then return false end
         local inventories = ctrlVars.inventories
         if not inventories then return false end
         --Check if the currently active focus in inside a search box
@@ -1929,7 +1926,7 @@ function FCOIS.CreateHooks()
     end)
     --Update inventory slot labels
     ZO_PreHook("UpdateInventorySlots", function()
-d("[FCOIS]UpdateInventorySlots")
+        --d("[FCOIS]UpdateInventorySlots")
         --This variable is set within file src/FCOIS_FilterButtons.lua, function FCOIS.updateFilteredItemCount if the addon AdvancedFilters is used,
         --and the AF itemCount is enabled (next to the inventory free slots labels), and FCOIS is calling the function AF.util.updateInventoryInfoBarCountLabel.
         -->Otherwise we would create an endless loop here which will be AF.util.updateInventoryInfoBarCountLabel -> UpdateInventorySlots ->
