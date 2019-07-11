@@ -1300,7 +1300,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 			--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
 			if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
 				if FCOIS.IIfAmouseOvered ~= nil then
-d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
+--d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
 					local IIfAmouseOvered = FCOIS.IIfAmouseOvered
 					if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
 						--Get the item's id from the itemLink
@@ -1308,11 +1308,10 @@ d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemL
 						--Item is already un/marked?
 						--local itemIsMarked = FCOIS.checkIfItemIsProtected(iconId, itemId)
 						local itemIsMarked = FCOIS.IsMarkedByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId)
-d(">itemId: " ..tostring(itemId) ..", itemIsMarked: " ..tostring(itemIsMarked))
 						itemIsMarked = not itemIsMarked
 						--Check if all markers should be removed prior to setting a new marker
-						--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName)
-						FCOIS.MarkItemByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId, itemIsMarked, IIfAmouseOvered.itemLink, itemId, nil)
+						--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName, updateInventories)
+						FCOIS.MarkItemByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId, itemIsMarked, IIfAmouseOvered.itemLink, itemId, nil, true)
 					end
 				end
 			end
