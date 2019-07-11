@@ -933,6 +933,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
     --Reset the IIfA clicked variables
     local IIfAclickedData
     FCOIS.IIfAclicked = nil
+	FCOIS.IIfAmouseOvered = nil
     --Get the rows bagId and slotIndex
     local iifaItemLink, itemInstanceOrUniqueIdIIfA, bagIdIIfA, slotIndexIIfA, charsTableIIfA, inThisOtherBagsTableIIfA = FCOIS.checkAndGetIIfAData(rowControl, rowControl:GetParent())
     if itemInstanceOrUniqueIdIIfA ~= nil or (bagIdIIfA ~= nil and slotIndexIIfA ~= nil) then

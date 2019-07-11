@@ -163,6 +163,16 @@ local function UpdateCraftingInventory(filterPanelOverride)
     end
 end
 
+--Check if other addons with an UI are enabled and shown and update their rows to show/hide FCOIS marker icons now
+local function UpdateOtherAddonUIs()
+   --Inventory Insight from Ashes
+    FCOIS.checkIfOtherAddonIIfAIsActive()
+    if IIfA ~= nil and IIFA_GUI ~= nil and not IIFA_GUI:IsHidden() and FCOIS.otherAddons.IIFAActive and IIfA.SetDataLinesData ~= nil then
+--d(">UpdateOtherAddonUIs-IIfA found, trying to update now!")
+        --IIfA:RefreshInventoryScroll() -- This will scroll to the top :-( We need to find a way to scroll back to the current scrollList index
+        IIfA:SetDataLinesData()
+    end
+end
 ------------------------------------------------------------------------------------------------------------------------
 
 --The function to update the inventories and lists after an item was un/marked
@@ -193,6 +203,8 @@ function FCOIS.FilterBasics(onlyPlayer)
             --Try to update the normal and then the crafting inventories
             UpdateInventories()
             UpdateCraftingInventory()
+            --Try to update other addon's UIs
+            UpdateOtherAddonUIs()
         end
         FCOIS.preventerVars.gFilteringBasics = false
     end

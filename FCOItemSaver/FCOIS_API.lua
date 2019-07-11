@@ -583,7 +583,7 @@ end -- FCOIS.MarkItem
 ---addonName (String):					Can be left NIL! The unique addon name which was used to temporarily enable the uniqueId usage for the item checks.
 ---										-> See FCOIS API function "FCOIS.UseTemporaryUniqueIds(addonName, doUse)"
 function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName)
-    --d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
+d("[FCOIS.MarkItemByItemInstanceId] id " .. tostring(itemInstanceOrUniqueId) .. ", iconId: " .. tostring(iconId) .. ", show: " .. tostring(showIcon))
     if itemInstanceOrUniqueId == nil then return false end
     if itemLink == nil and itemId == nil then return false end
     if showIcon == nil then showIcon = true end
@@ -643,13 +643,14 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
             --Allow the update of the marker here, and change it later if no update is needed
             local doUpdateMarkerNow = true
             if itemLink ~= nil then
-                --d(">"..itemLink)
+d(">"..itemLink)
                 local researchableItem = false
                 --Set the marker here now
                 local itemIsMarked = showIcon
                 if itemIsMarked == nil then itemIsMarked = false end
                 --Item is already un/marked -> No need to change it
                 if FCOIS.checkIfItemIsProtected(iconId, itemInstanceOrUniqueId, nil, addonName) == itemIsMarked then
+d(">changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                     doUpdateMarkerNow = false
                 else
                     --Check if the item is a researchable one, but only if icon should be shown and bag + slot are given
@@ -660,26 +661,27 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         researchableItem = true
                         -- Check if item is researchable (as only researchable items can work as equipment too)
                         if (not FCOIS.isItemLinkResearchable(itemLink, iconId)) then
+d(">Item is not researchable. Changed doUpdateMarkerNow to: " ..tostring(doUpdateMarkerNow))
                             doUpdateMarkerNow = false
                             recurRetValTotal = false
                         end
                     end
                 end
 
-                --d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
+d("[FCOIS]MarkItemByItemInstanceId doUpdateMarkerNow: " ..tostring(doUpdateMarkerNow) ..", iconId: " ..tostring(iconId) .. ", show: " ..tostring(showIcon))
                 --Change the marker now?
                 if doUpdateMarkerNow then
                     --Unmark all other markers before? Only if marker should be set
                     --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                     if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and FCOIS.checkIfItemShouldBeDemarked(iconId) then
-                        --d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
+d(">remove all markers now, isCharShown: " ..tostring(isCharShown) .. ", bag: " ..tostring(bag) .. ", charCtrlHidden: " .. tostring(FCOIS.ZOControlVars.CHARACTER:IsHidden()))
                         --Remove all markers now
                         FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, -1, false, itemLink, itemId, addonName)
                         FCOIS.preventerVars.markItemAntiEndlessLoop = false
 
                     --Any other circumstances
                     else
-                        --d(">1")
+d(">1")
                         --Prevent endless loop here as FCOIS.MarkItemByItemInstanceId will call itsself recursively
                         -- Should the item be marked?
                         if not FCOIS.preventerVars.markItemAntiEndlessLoop and showIcon and (
@@ -687,7 +689,7 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                                 --  and is the setting to remove sell/sell at guild store enabled if any other marker icon is set?
                                 FCOIS.checkIfOtherDemarksSell(iconId)
                         ) then
-                            --d(">2")
+d(">2")
                             --Get the icon to remove
                             local iconsToRemove = {}
                             iconsToRemove = FCOIS.getIconsToRemove(iconId)
@@ -711,13 +713,13 @@ function FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon
                         end
                     end
 
-                    --d(">>itemIsMarked: " .. tostring(itemIsMarked))
+d(">>itemIsMarked: " .. tostring(itemIsMarked))
 
                     --Shall we unmark the item? Then remove it from the SavedVars totally!
                     if itemIsMarked == false then itemIsMarked = nil end
                     --Un/Mark the item now
                     FCOIS.markedItems[iconId][FCOIS.SignItemId(itemInstanceOrUniqueId, nil, nil, addonName)] = itemIsMarked
-                    --d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
+d(">> new markedItem value: " .. tostring(FCOIS.markedItems[iconId][FCOIS.SignItemId(itemId, nil, nil, nil)]))
                 end
             end --if itemId ~= nil
         end -- if iconId ~= -1
@@ -1218,13 +1220,26 @@ end -- FCOGetLocText
 function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
     if iconId == nil then return false end
 	if not FCOIS.checkIfFCOISSettingsWereLoaded(true) then return false end
-    --is the icon enabled? Otherwise abort here.
+	--is the icon enabled? Otherwise abort here.
     local settings = FCOIS.settingsVars.settings
 	local isIconEnabled = settings.isIconEnabled
 	if not isIconEnabled[iconId] then return false end
-	local bagId, slotIndex
+	local isIIfAControlChanged = false
+	local bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
 	if p_bagId == nil or p_slotIndex == nil then
-		bagId, slotIndex = FCOIS.GetBagAndSlotFromControlUnderMouse()
+		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
+		--No valid bagId and slotIndex was found
+		if bagId == false and slotIndex == nil then
+			--Is the controlType below the mouse given?
+			if controlTypeBelowMouse ~= nil then
+				--Did we try to change a marker icon at the InventoryInsightFromAshes UI?
+				if controlTypeBelowMouse == FCOIS.otherAddons.IIFAitemsListEntryPrePattern then
+					if FCOIS.IIfAmouseOvered ~= nil then
+d("[FCOIS]MarkItemByKeybind-IIfA control found: " .. FCOIS.IIfAmouseOvered.itemLink)
+					end
+				end
+			end
+		end
 	else
 		bagId, slotIndex =  p_bagId, p_slotIndex
 	end
@@ -1258,6 +1273,19 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
             end
         end
     else
+		if FCOIS.IIfAmouseOvered ~= nil then
+			local IIfAmouseOvered = FCOIS.IIfAmouseOvered
+			if IIfAmouseOvered.itemLink ~= nil and IIfAmouseOvered.itemInstanceOrUniqueId ~= nil then
+				--Get the item's id from the itemLink
+				local itemId = FCOIS.getItemIdFromItemLink(FCOIS.IIfAmouseOvered.itemLink)
+				--Item is already un/marked?
+				local itemIsMarked = FCOIS.checkIfItemIsProtected(iconId, itemId)
+d(">itemId: " ..tostring(itemId) ..", itemIsMarked: " ..tostring(itemIsMarked))
+				--Check if all markers should be removed prior to setting a new marker
+				--FCOIS.MarkItemByItemInstanceId(itemInstanceOrUniqueId, iconId, showIcon, itemLink, itemId, addonName)
+				FCOIS.MarkItemByItemInstanceId(IIfAmouseOvered.itemInstanceOrUniqueId, iconId, itemIsMarked, IIfAmouseOvered.itemLink, itemId, nil)
+			end
+		end
         return false
     end
 end -- FCOIS.MarkItemByKeybind

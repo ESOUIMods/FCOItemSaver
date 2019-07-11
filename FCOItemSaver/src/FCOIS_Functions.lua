@@ -76,6 +76,12 @@ function FCOIS.getItemLinkFromItemId(itemId)
     return string.format("|H1:item:%d:%d:50:0:0:0:0:0:0:0:0:0:0:0:0:%d:%d:0:0:%d:0|h|h", itemId, 0, ITEMSTYLE_NONE, 0, 10000)
 end
 
+--Function to get the itemId from an itemLink
+function FCOIS.getItemIdFromItemLink(itemLink)
+    return GetItemLinkItemId(itemLink)
+end
+
+
 --Check if the given addonName had enabled the temporary uniqueId checks
 local function checkIfAddonNameHasTemporarilyEnabledUniqueIds(addonName)
     if addonName ~= nil and addonName ~= "" and FCOIS.temporaryUseUniqueIds ~= nil and FCOIS.temporaryUseUniqueIds[addonName] ~= nil then
@@ -337,8 +343,12 @@ function FCOIS.checkRepetivelyIfControlExists(controlName, callbackFunc, stepToc
     end
 end
 
---Get the bagid and slotIndex from the item below the mouse cursor
+--Get the bagid and slotIndex from the item below the mouse cursor.
+--And get the control hovered over, the controlType (e.g. Inventory, CraftBag, .. or other addon's UI like Inventory Insigh from Ashes row)
+-->Returns bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
 function FCOIS.GetBagAndSlotFromControlUnderMouse()
+    --The control type below the mouse
+    local controlTypeBelowMouse = false
     --Get the control below the mouse cursor
     local moc = WINDOW_MANAGER:GetMouseOverControl()
     if moc == nil then return end
@@ -347,6 +357,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     local slotIndex
     local itemLink
     local itemInstanceOrUniqueIdIIfA
+    FCOIS.IIfAmouseOvered = nil
     --if it's a backpack row or child of one -> PRE API 1000015
     if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
         if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
@@ -357,7 +368,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-    --if it's a backpack row or child of one -> Since API 1000015
+        --if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
         if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -367,7 +378,7 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-    --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
+        --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
     elseif moc:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
         if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -377,8 +388,8 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-    --if it's a RETRAIT station row or child of one -> Since API 1000015
-    --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
+        --if it's a RETRAIT station row or child of one -> Since API 1000015
+        --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
     elseif moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
         if moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
             bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
@@ -388,24 +399,29 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
                 bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
             end
         end
-    --Character
+        --Character
     elseif moc:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --Quickslot
+        --Quickslot
     elseif moc:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --Vendor rebuy
+        --Vendor rebuy
     elseif moc:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
         bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
-    --IIfA support
+        --IIfA support
     elseif moc:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
+        controlTypeBelowMouse = FCOIS.otherAddons.IIFAitemsListEntryPrePattern
         itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(moc, moc:GetParent())
-        --Todo: 2019-03-11 IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
+        if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
+            FCOIS.IIfAmouseOvered = {}
+            FCOIS.IIfAmouseOvered.itemLink = itemLink
+            FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+        end
     end
     if bagId ~= nil and slotIndex ~= nil then
-        return bagId, slotIndex
+        return bagId, slotIndex, moc, controlTypeBelowMouse
     else
-        return false
+        return false, nil, moc, controlTypeBelowMouse
     end
 end
 

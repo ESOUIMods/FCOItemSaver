@@ -134,6 +134,7 @@ end
 -- ==================================================================
 --Check if an update to the visible marker icons need to be done
 function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
+--d("[FCOIS]checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate-markId: " ..tostring(markId))
     --Were all other marker icons removed as this marker icon got set?
     if FCOIS.checkIfItemShouldBeDemarked(markId)
         --  Icon is not sell or sell at guild store
@@ -144,7 +145,6 @@ function FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowContr
         --Other addons "Inventory Insight" integration:
         --Update the complete row in the IIfA inventory frame
         if IIfA ~= nil and FCOIS.IIfAclicked ~= nil and IIfA.UpdateFCOISMarkerIcons ~= nil then
-            --d(">updating IIfA row")
             local showFCOISMarkerIcons = IIfA:GetSettings().FCOISshowMarkerIcons
             IIfA:UpdateFCOISMarkerIcons(rowControl, showFCOISMarkerIcons, false, -1)
         end

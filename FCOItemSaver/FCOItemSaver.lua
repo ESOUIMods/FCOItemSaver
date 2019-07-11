@@ -26,7 +26,7 @@
 
 -- 3) 2019-04-10 - Bugfix -  Reported by Kyoma on gitter.im
 --Kyoma: Go to bank withdraw tab and use the keybind to mark with lock icon, then use keybind again to demark it.
---> Will produce an called by insecure code.
+--> Will produce a called by insecure code LUA error (tainted code of the context menu?)
 --> Why?
 --Votan: item saver does ZO_PreHook("ZO_InventorySlot_ShowContextMenu",
 -- Recomment to use libCustomMenu RegisterContextMenu
