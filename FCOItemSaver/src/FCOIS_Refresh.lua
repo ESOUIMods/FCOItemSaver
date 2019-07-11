@@ -168,7 +168,7 @@ local function UpdateOtherAddonUIs()
    --Inventory Insight from Ashes
     FCOIS.checkIfOtherAddonIIfAIsActive()
     if IIfA ~= nil and IIFA_GUI ~= nil and not IIFA_GUI:IsHidden() and FCOIS.otherAddons.IIFAActive and IIfA.SetDataLinesData ~= nil then
---d(">UpdateOtherAddonUIs-IIfA found, trying to update now!")
+d(">UpdateOtherAddonUIs-IIfA found, trying to update now!")
         --IIfA:RefreshInventoryScroll() -- This will scroll to the top :-( We need to find a way to scroll back to the current scrollList index
         IIfA:SetDataLinesData()
     end
@@ -199,6 +199,8 @@ function FCOIS.FilterBasics(onlyPlayer)
             UpdateTransmutationList()
         elseif (onlyPlayer == true) then
             UpdateInventories()
+            --Try to update other addon's UIs
+            UpdateOtherAddonUIs()
         else
             --Try to update the normal and then the crafting inventories
             UpdateInventories()

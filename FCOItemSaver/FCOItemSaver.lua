@@ -19,11 +19,6 @@
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
--- 2) 2019-03-11 - Bugfix - Baertram
---Todo: IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
---> See file src/FCOIS_functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse(), at --IIfA support
---> marking via bagId and slotIndex does work BUT the list of IIfA is not refreshed until scrolling! SO this needs a fix as well.
-
 -- 3) 2019-04-10 - Bugfix -  Reported by Kyoma on gitter.im
 --Kyoma: Go to bank withdraw tab and use the keybind to mark with lock icon, then use keybind again to demark it.
 --> Will produce a called by insecure code LUA error (tainted code of the context menu?)
@@ -34,6 +29,10 @@
 
 
 --
+--Fixed:
+--  Bug #2: Updating keybinds at the InventoryInsightFromAshes UI won't update the marker icons shown.
+--          They will show the changed amrker icons now on the IIfA UI and the normal inventories (if both are open at the same time),
+--          and they will also update the marker icons for non-logged in characters in the IIfA UI properly now.
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
 --Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
