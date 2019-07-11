@@ -17,7 +17,7 @@
 --[ToDo list] --
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
---> Bug within LibCustomMenu -> >To be fixed by Votan?
+--> Bug within LibCustomMenu -> To be fixed by Votan?
 
 -- 2) 2019-03-11 - Bugfix - Baertram
 --Todo: IIfA UI: Set FCOIS marker icons by keybind for items without bagId and slotIndex (non-logged in chars!), by help of the itemLink and itemInstanceOrUniqueIdIIfA
@@ -32,19 +32,7 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
--- 4) 2019-06-19 - Feature - Baertram
---SavedVariables should be saveable for all accounts, if settings to use accountwide are enabled, and copy/delete functions are needed within the settings
---> See file src/FCOIS_Settings.lua
 
--- 5) 2019-06-23 - Bugfix - Baertram
---Split slotCount on mail/trade panels should not do the antimail/trade checks chat output or right upper corner error messages anymore!
---> e.g. split 20 food marked with the lock icon to 2x10 food -> error message in chat and upper right corner is raised.
---> See file src/FCOIS_Events.lua, OnInventorySlotLocker and OnInventorySlotUnlocked must check if the split process is used and set a variable to "NOT" show the error messages.
-
-
---Changelog since last version 1.5.8
---Fixed:
---Bugfix for 5) Split slotCount on mail/trade panels should not do the antimail/trade checks chat output or right upper corner error messages anymore!
 --
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
@@ -62,8 +50,21 @@ local FCOIS = FCOIS
 -- =====================================================================================================================
 --  Gamepad functions
 -- =====================================================================================================================
+function FCOIS.resetPreventerVariableAfterTime(eventRegisterName, preventerVariableName, newValue, resetAfterTimeMS)
+    local eventNameStart = "FCOIS_PreventerVariableReset_"
+    if eventRegisterName == nil or eventRegisterName == "" or preventerVariableName == nil or preventerVariableName == "" or resetAfterTimeMS == nil then return end
+    local eventName = eventNameStart .. tostring(eventRegisterName)
+    EVENT_MANAGER:UnregisterForUpdate(eventName)
+    EVENT_MANAGER:RegisterForUpdate(eventName, resetAfterTimeMS, function()
+        EVENT_MANAGER:UnregisterForUpdate(eventName)
+        if FCOIS.preventerVars == nil or FCOIS.preventerVars[preventerVariableName] == nil then return end
+        FCOIS.preventerVars[preventerVariableName] = newValue
+    end)
+end
+
 --Is the gamepad mode enabled in the ESO settings?
-function FCOIS.FCOItemSaver_CheckGamePadMode()
+function FCOIS.FCOItemSaver_CheckGamePadMode(showChatOutputOverride)
+    showChatOutputOverride = showChatOutputOverride or false
     FCOIS.preventerVars = FCOIS.preventerVars or {}
     --Gamepad enabled?
     if IsInGamepadPreferredMode() then
@@ -72,8 +73,10 @@ function FCOIS.FCOItemSaver_CheckGamePadMode()
         if FCOIS.checkIfADCUIAndIsNotUsingGamepadMode() then
             return false
         else
-            if FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then
+            if showChatOutputOverride or FCOIS.preventerVars.noGamePadModeSupportTextOutput == false then
                 FCOIS.preventerVars.noGamePadModeSupportTextOutput = true
+                --Reset the anti-chat spam variable FCOIS.preventerVars.noGamePadModeSupportTextOutput again after 3 seconds
+                FCOIS.resetPreventerVariableAfterTime("noGamePadModeSupportTextOutput", "noGamePadModeSupportTextOutput", false, 3000)
                 --Normal gamepad mode is enabled -> Abort with error message "not supported!"
                 local noGamepadModeSupportedLanguageTexts = {
                     ["en"]	=	"FCO ItemSaver does not support the gamepad mode! Please change the mode to keyboard at the settings.",
@@ -95,7 +98,6 @@ function FCOIS.FCOItemSaver_CheckGamePadMode()
         return false
     end
 end
-
 
 -- =====================================================================================================================
 --  Addon initialization
