@@ -801,9 +801,12 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
         if FCOIS.settingsVars.settings ~= nil and FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[FCOIS -Event- FCOItemSaver_Loaded]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --d("[FCOIS -Event- FCOItemSaver_Loaded]")
 
+        --Unregister this event again so it isn't fired again after this addon has beend recognized
+        EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_ADD_ON_LOADED)
+        --Register for the zone change/player ready event
+        EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
+
         if not FCOIS.FCOItemSaver_CheckGamePadMode(true) then
-            --Unregister this event again so it isn't fired again after this addon has beend recognized
-            EVENT_MANAGER:UnregisterForEvent(gAddonName, EVENT_ADD_ON_LOADED)
 
             if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Addon loading begins...]", true, FCOIS_DEBUG_DEPTH_NORMAL) end
             FCOIS.addonVars.gAddonLoaded = false
@@ -811,9 +814,6 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
 
             -- Registers addon to loadedAddon library LibLoadedAddons
             FCOIS.LIBLA:RegisterAddon(gAddonName, FCOIS.addonVars.addonVersionOptionsNumber)
-
-            --Register for the zone change/player ready event
-            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_PLAYER_ACTIVATED, FCOItemSaver_Player_Activated)
 
             --Register for Crafting stations opened & closed (integer eventCode,number craftSkill, boolean sameStation)
             EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_CRAFTING_STATION_INTERACT, FCOItemSaver_Crafting_Interact)
