@@ -1395,8 +1395,13 @@ function FCOIS.getFilteredItemCountAtPanel(libFiltersPanelId, panelIdOrInventory
     end
 --d("[FCOIS]getFilteredItemCountAtPanel, filterPanelId: " .. tostring(libFiltersPanelId) .. ", inventoryType: " .. tostring(panelIdOrInventoryTypeString))
     if filteredItemsArray == nil then
-        return 0 end
-    numberOfFilteredItems = #filteredItemsArray
+        return 0
+    end
+    if type(filteredItemsArray) == "table" then
+        numberOfFilteredItems = #filteredItemsArray
+    else
+        numberOfFilteredItems = filteredItemsArray
+    end
     if not numberOfFilteredItems or numberOfFilteredItems <= 0 then return 0 end
     return numberOfFilteredItems
 end
