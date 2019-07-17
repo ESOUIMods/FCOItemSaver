@@ -781,16 +781,36 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     if settings.debug then FCOIS.debugMessage( "[DeconstructionSelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) .. ", echo: " .. tostring(echo) .. ", overrideChatOutput: " .. tostring(overrideChatOutput) .. ", suppressChatOutput: " .. tostring(suppressChatOutput) .. ", overrideAlert: " .. tostring(overrideAlert) .. ", suppressAlert: " .. tostring(suppressAlert) .. ", calledFromExternalAddon: " .. tostring(calledFromExternalAddon) .. ", panelId: " .. tostring(panelId), true, FCOIS_DEBUG_DEPTH_SPAM) end
     --> GOT HERE FROM CONTEXT MENU ENTRY FOR "ADD ITEM TO CRAFT" e.g.
     -- Is user not at the deconstruction panel or the panelId is given from the function call but it is NOT the deconstruction panel at a crafting station?
-    if( not ctrlVars.DECONSTRUCTION_BAG or ctrlVars.DECONSTRUCTION_BAG:IsHidden() or (panelId ~= nil and (panelId ~= LF_SMITHING_DECONSTRUCT or panelId ~= LF_JEWELRY_DECONSTRUCT)) ) then
+    --Get the current craftingtype
+    local craftingTypeIsDeconstuctable = false
+    local craftingType
+    if calledFromExternalAddon then
+        local craftingTypesWithDeconstruction = {
+            [CRAFTING_TYPE_BLACKSMITHING] = true,
+            [CRAFTING_TYPE_CLOTHIER] = true,
+            [CRAFTING_TYPE_JEWELRYCRAFTING] = true,
+            [CRAFTING_TYPE_WOODWORKING] = true,
+        }
+        craftingType = GetCraftingInteractionType()
+        craftingTypeIsDeconstuctable = craftingTypesWithDeconstruction[craftingType] or false
+    end
+    local noDeconstructionShouldBeDone = true
+    if (ctrlVars.DECONSTRUCTION_BAG ~= nil and not ctrlVars.DECONSTRUCTION_BAG:IsHidden()) or (calledFromExternalAddon and craftingTypeIsDeconstuctable) or (panelId ~= nil and (panelId == LF_SMITHING_DECONSTRUCT or panelId == LF_JEWELRY_DECONSTRUCT)) then
+        noDeconstructionShouldBeDone = false
+    end
+
+--d("[FCOIS]DeconstructionSelectionHandler - panelId: " ..tostring(panelId) .. ", calledFromExternalAddon: " ..tostring(calledFromExternalAddon) .. "->craftingType: " .. tostring(craftingType) .. ", craftingTypeIsDeconstuctable: " ..tostring(craftingTypeIsDeconstuctable).. ", noDeconstructionShouldBeDone: " ..tostring(noDeconstructionShouldBeDone))
+    --Call the itemSelectionHandler for everything else then Deconstruction now?
+    if( noDeconstructionShouldBeDone ) then
         --d("No deconstruction ->  Use ItemSelectionHandler")
         if ( calledFromExternalAddon
-                or (not ctrlVars.ALCHEMY_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ALCHEMY_CREATION)
-                or (not ctrlVars.ENCHANTING_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ENCHANTING_CREATION or FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION)
-                or (FCOIS.craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE)
-                or (FCOIS.craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT)
-                or (FCOIS.craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH)
-                or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG)
-                or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT)
+                or (not ctrlVars.ALCHEMY_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ALCHEMY_CREATION or (calledFromExternalAddon and (panelId==LF_ALCHEMY_CREATION)))
+                or (not ctrlVars.ENCHANTING_STATION:IsHidden() or FCOIS.gFilterWhere == LF_ENCHANTING_CREATION or FCOIS.gFilterWhere == LF_ENCHANTING_EXTRACTION or (calledFromExternalAddon and (panelId==LF_ENCHANTING_CREATION or panelId==LF_ENCHANTING_EXTRACTION)))
+                or (FCOIS.craftingPrevention.IsShowingRefinement() or FCOIS.gFilterWhere == LF_SMITHING_REFINE or FCOIS.gFilterWhere == LF_JEWELRY_REFINE or (calledFromExternalAddon and (panelId==LF_SMITHING_REFINE or panelId==LF_JEWELRY_REFINE)))
+                or (FCOIS.craftingPrevention.IsShowingImprovement() or FCOIS.gFilterWhere == LF_SMITHING_IMPROVEMENT or FCOIS.gFilterWhere == LF_JEWELRY_IMPROVEMENT or (calledFromExternalAddon and (panelId==LF_SMITHING_IMPROVEMENT or panelId==LF_JEWELRY_IMPROVEMENT)))
+                or (FCOIS.craftingPrevention.IsShowingResearch() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH or panelId==LF_JEWELRY_RESEARCH)))
+                or (FCOIS.isResearchListDialogShown() or FCOIS.gFilterWhere == LF_SMITHING_RESEARCH_DIALOG or FCOIS.gFilterWhere == LF_JEWELRY_RESEARCH_DIALOG or (calledFromExternalAddon and (panelId==LF_SMITHING_RESEARCH_DIALOG or panelId==LF_JEWELRY_RESEARCH_DIALOG)))
+                or (FCOIS.isRetraitStationShown() or FCOIS.gFilterWhere == LF_RETRAIT or (calledFromExternalAddon and panelId==LF_RETRAIT))
         ) then
             --or (not ctrlVars.GUILD_STORE:IsHidden() or FCOIS.gFilterWhere == LF_GUILDSTORE_SELL) ) then
             return FCOIS.callItemSelectionHandler(bag, slot, echo, false, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, false, panelId)
@@ -798,6 +818,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
             return false
         end
     end
+    --Call the deconstruction handler stuff now for deconstruction!
     --The mapping table for the current deconstruction panel
     local deconPanelToBlockSettings = {
         [LF_SMITHING_DECONSTRUCT]   = settings.blockDeconstruction,
@@ -851,7 +872,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                     --Abort the loop over the other icons now
                     return false
                 end
-            --Icon for intricate, and settings allows deconstruction?
+                --Icon for intricate, and settings allows deconstruction?
             elseif i==FCOIS_CON_ICON_INTRICATE and settings.allowDeconstructIntricate then
                 --dont block item: Set loop variable to false so isAnyIconProtected and isBlockedLoop are not true!
                 isBlockedLoop = false

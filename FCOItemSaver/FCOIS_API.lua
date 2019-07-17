@@ -4,10 +4,8 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
-local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
-
 --==========================================================================================================================================
--- 															FCOIS API
+-- 			README PLEASE		README PLEASE			-FCOIS API limitations-			README PLEASE		README PLEASE
 --==========================================================================================================================================
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
 --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver is NOT working with the gamepad mode enabled !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -31,7 +29,22 @@ local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 --else
 --	--We are in keyboard mode so FCOIS will work normal
 --end
+--
+--
+--
+--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FCOItemSaver API functions are NOT working properly at crafting stations if you do not open the controls (UI)
+--normally (e.g. show the Deconstruction panel and THEN check for FCOIS.IsDeconstructionLocked(bagId, slotIndex) ) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--Due to ESO's design one could simply approach a crafting station and as the station got opened (And it's on the way to show the refinement pabel)
+--you could already deconstruct, improve and/or refine materials. But FCOItemSaver relies on the UI elements like improvementSlot, refinementSlot,
+--etc. in order to detect the opened panel, assure all items got loaded properly and the marker icons set will be checked + the items protected
+--properly. So please do not use the FCOIS API to do crafting stuff and protection checks if the UI for the crafting is not loaded properly!
 --IMPORTANT		IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT	IMPORTANT
+
+--==========================================================================================================================================
+-- 															FCOIS API
+--==========================================================================================================================================
+--Local variables for speedup
+local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

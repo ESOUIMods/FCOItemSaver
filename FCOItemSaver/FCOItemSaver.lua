@@ -27,6 +27,12 @@
 -- Recomment to use libCustomMenu RegisterContextMenu
 -- Should be a following error
 
+--4) 2019-07-16 - Featue - Baertram
+--Add submenus for each character name of the account, below the automatic set checks and provide settings to:
+---Change the automatic set marker checks so they FIRST check for the level of the item and THEN apply the "Unwanted traits"
+---checks, so that characters which get leveled will automatically mark the loote set items for deconstruction instead of
+---set oitems (or similar behaviour!)
+
 
 --
 --Fixed:
