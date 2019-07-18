@@ -840,6 +840,7 @@ function FCOIS.CreateHooks()
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
     if researchPopupDialogCustomControl ~= nil then
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnShow", function()
+--d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
             --As this OnShow function will be also called for other ZO_ListDialog1 dialogs...
             --Check if we are at the research popup dialog
             if not FCOIS.isResearchListDialogShown() then return false end
@@ -848,6 +849,7 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
+--d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
             --Check if we are at the research popup dialog
             if not FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
