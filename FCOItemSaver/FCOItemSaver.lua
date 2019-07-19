@@ -28,10 +28,10 @@
 -- Should be a following error
 
 --4) 2019-07-16 - Featue - Baertram
---Add submenus for each character name of the account, below the automatic set checks and provide settings to:
----Change the automatic set marker checks so they FIRST check for the level of the item and THEN apply the "Unwanted traits"
----checks, so that characters which get leveled will automatically mark the loote set items for deconstruction instead of
----set oitems (or similar behaviour!)
+--Add setting to autoamtic marks->set items->non wished: Mark non-wished set items if character level below 50
+---Change the automatic set marker checks so they FIRST check this new setting.
+---If enabled then get the currently logegd in character'S level and if it's below 50 mark the item as non-wished even if the trait would be a wished one.
+---> For characters which get leveled this will automatically mark the looted set items for deconstruction instead of set items e.g.
 
 
 --

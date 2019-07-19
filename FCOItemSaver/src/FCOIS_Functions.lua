@@ -1156,6 +1156,18 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the effective level of a unitTag and check if it's above or equals a specified "needed level".
+--Returns boolean true if level is above or equal the parameter neededLevel
+--Returns boolean false if level is below the parameter neededLevel
+function FCOIS.checkNeededLevel(unitTag, neededLevel)
+    if unitTag == nil or neededLevel == nil or type(neededLevel) ~= "number" then return false end
+    local gotNeededLevel = false
+    local charLevel = GetUnitLevel(unitTag)
+    if not charLevel then return false end
+    gotNeededLevel = (charLevel >= neededLevel) or false
+    return gotNeededLevel
+end
+
 --Get the type of the vendor used currently.
 -- "Normal"     = NPC vendor
 -- "Nuzhimeh"   = The mobile vendor you can buy in the crown store, called Nuzhimeh

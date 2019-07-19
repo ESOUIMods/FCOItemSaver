@@ -3858,6 +3858,22 @@ function FCOIS.BuildAddonMenu()
                                                 },
 
                                                 {
+                                                    type = "checkbox",
+                                                    name = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50"],
+                                                    tooltip = locVars["options_enable_auto_mark_sets_non_wished_char_below_level_50_TT"],
+                                                    getFunc = function() return FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel end,
+                                                    setFunc = function(value)
+                                                        FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel = value
+                                                        if (FCOISsettings.autoMarkSetsNonWished == true) then
+                                                            FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
+                                                        end
+                                                    end,
+                                                    disabled = function() return (not FCOISsettings.autoMarkSetsNonWished or (not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.autoMarkSets)) end,
+                                                    width = "full",
+                                                    default = FCOISdefaultSettings.autoMarkSetsNonWishedIfCharBelowLevel,
+                                                },
+
+                                                {
                                                     type = 'dropdown',
                                                     name = locVars["options_enable_auto_mark_sets_non_wished_checks"],
                                                     tooltip = locVars["options_enable_auto_mark_sets_non_wished_checks_TT"],
@@ -3871,7 +3887,7 @@ function FCOIS.BuildAddonMenu()
                                                             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedChecks,
                                                 },
@@ -3894,7 +3910,7 @@ function FCOIS.BuildAddonMenu()
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_LEVEL)) end,
                                                     width = "full",
                                                     default = levelList[FCOISdefaultSettings.autoMarkSetsNonWishedLevel],
                                                 },
@@ -3916,7 +3932,7 @@ function FCOIS.BuildAddonMenu()
                                                             end
                                                         end
                                                     end,
-                                                    disabled = function()return (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
+                                                    disabled = function()return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOISsettings.autoMarkSetsNonWishedIconNr] or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] or (FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_ALL and FCOISsettings.autoMarkSetsNonWishedChecks~=FCOIS_CON_NON_WISHED_QUALITY)) end,
                                                     width = "full",
                                                     default = qualityList[FCOISdefaultSettings.autoMarkSetsNonWishedQuality],
                                                 },
@@ -3931,7 +3947,7 @@ function FCOIS.BuildAddonMenu()
                                                             FCOIS.scanInventoryItemsForAutomaticMarks(nil, nil, "sets", false)
                                                         end
                                                     end,
-                                                    disabled = function() return not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL] end,
+                                                    disabled = function() return (FCOISsettings.autoMarkSetsNonWishedIfCharBelowLevel and not FCOIS.checkNeededLevel("player", 50)) or (not FCOISsettings.autoMarkSets or not FCOISsettings.autoMarkSetsNonWished or not FCOISsettings.isIconEnabled[FCOIS_CON_ICON_SELL]) end,
                                                     width = "full",
                                                     default = FCOISdefaultSettings.autoMarkSetsNonWishedSellOthers,
                                                 },

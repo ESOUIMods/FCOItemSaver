@@ -182,6 +182,7 @@ function FCOIS.buildDefaultSettings()
         autoMarkSetsCheckWeaponTraitIcon	= {},
 		autoMarkSetsNonWished 				= false,
 		autoMarkSetsNonWishedIconNr			= FCOIS_CON_ICON_DECONSTRUCTION,
+		autoMarkSetsNonWishedIfCharBelowLevel = false,
         autoMarkSetsNonWishedChecks         = FCOIS_CON_NON_WISHED_LEVEL,
         autoMarkSetsNonWishedSellOthers     = true,
 		autoMarkSetsNonWishedQuality 		= 1,
