@@ -496,8 +496,7 @@ function FCOIS.CreateHooks()
     local locVars = FCOIS.localizationVars.fcois_loc
 
     --========= INVENTORY SLOT - SHOW CONTEXT MENU =================================
-    -- Hook functions for the inventory/store contextmenus
-    ZO_PreHook("ZO_InventorySlot_ShowContextMenu", function(rowControl)
+    local function ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl, slotActions)
         local prevVars = FCOIS.preventerVars
         FCOIS.preventerVars.buildingInvContextMenuEntries = false
         --As this prehook is called before the character OnMouseUp function is called:
@@ -522,11 +521,13 @@ function FCOIS.CreateHooks()
             --d(">FCOIS context menu, hiding it!")
             FCOIS.preventerVars.dontShowInvContextMenu = false
             --Hide the context menu now by returning true in this preHook and not calling the "context menu show" function
+            --Nil the current menu ZO_Menu so it does not show (anti-flickering)
+            ClearMenu()
             return true
         end
 
         --Call a little bit later so the context menu is already created
-        zo_callLater(function()
+        --zo_callLater(function()
             --Reset the IIfA clicked variables
             FCOIS.IIfAclicked = nil
 
@@ -620,8 +621,16 @@ function FCOIS.CreateHooks()
                 end
             end -- if contextMenuEntriesAdded > 0 then
             FCOIS.preventerVars.buildingInvContextMenuEntries = false
-        end, 30) -- zo_callLater
+        --end, 30) -- zo_callLater
+    end
+
+    -- Hook functions for the inventory/store contextmenus
+    --[[ -- Replaced by LibCustomMenu:RegisterContextMenu(func, category, ...)
+    ZO_PreHook("ZO_InventorySlot_ShowContextMenu", function(rowControl)
+        ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver(rowControl)
     end)
+    ]]
+    LibCustomMenu:RegisterContextMenu(ZO_InventorySlot_ShowContextMenu_For_FCOItemSaver)
 
     --========= ZO_DIALOG1 / DESTROY DIALOG ========================================
     --Destroy item dialog button 2 ("Abort") hook

@@ -527,7 +527,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             firstAdd = false
             --Dev. info: Reset of the IIfA clicked row variables cannot be done here!
             --As the variables will be NIL then BEFORE the last checks were done (within FCOIS.isItemResearchable() e.g.)
-            --It will be NILed furthoer more down after the ShowMenu() function was called for the last entry
+            --It will be NILed further more down after the ShowMenu() function was called for the last entry
         end
     end
 

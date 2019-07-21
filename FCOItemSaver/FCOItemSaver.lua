@@ -19,30 +19,21 @@
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
--- 3) 2019-04-10 - Bugfix -  Reported by Kyoma on gitter.im
---Kyoma: Go to bank withdraw tab and use the keybind to mark with lock icon, then use keybind again to demark it.
---> Will produce a called by insecure code LUA error (tainted code of the context menu?)
---> Why?
---Votan: item saver does ZO_PreHook("ZO_InventorySlot_ShowContextMenu",
--- Recomment to use libCustomMenu RegisterContextMenu
--- Should be a following error
-
---4) 2019-07-16 - Featue - Baertram
---Add setting to autoamtic marks->set items->non wished: Mark non-wished set items if character level below 50
----Change the automatic set marker checks so they FIRST check this new setting.
----If enabled then get the currently logegd in character'S level and if it's below 50 mark the item as non-wished even if the trait would be a wished one.
----> For characters which get leveled this will automatically mark the looted set items for deconstruction instead of set items e.g.
-
-
 --
 --Fixed:
 --  Bug #2: Updating keybinds at the InventoryInsightFromAshes UI won't update the marker icons shown.
 --          They will show the changed amrker icons now on the IIfA UI and the normal inventories (if both are open at the same time),
 --          and they will also update the marker icons for non-logged in characters in the IIfA UI properly now.
+--  Bug #3: Bank keybind triggers lua error about insecure call
+--          Replaced PreHook of ZO_InventorySlot_ShowContextMenu with LibCustomMenu:RegisterContextMenu(...)
+--  Bug #5: Filtering for items will recognize all filter buttons now and will hide items which are hidden via a green filter button 1 to 3 even if button 4 says "only show"
+--
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
 --Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
---If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
+--->If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
+--Add feature request #4 Setting to automatic marks->set items->non wished: Mark non-wished set items if character level below 50 and item below max level or max CP level
+
 --
 --Added on request:
 --SavedVariables can be enabled for all acounts the same
