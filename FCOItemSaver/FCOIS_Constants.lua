@@ -2106,7 +2106,7 @@ local invAddButtonVars = FCOIS.invAdditionalButtonVars
 --and file FCOIS_constants.lua at the bottom for the anchorvars for each API version.
 --Entries without a parent and without "addInvButton" boolean == true will not be added again as another panel (like LF_INVENTORY) is reused for the button.
 --The entry is only there to get the button's name for the functions in file "FCOIS_ContextMenus.lua" to show/hide it.
---> To check what entries the context menu below this invokerButton will create/show check the file src/FCOIS_COntextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
+--> To check what entries the context menu below this invokerButton will create/show check the file src/FCOIS_ContextMenus.lua, function FCOIS.showContextMenuForAddInvButtons(invokerButton)
 FCOIS.contextMenuVars.filterPanelIdToContextMenuButtonInvoker = {
 	[LF_INVENTORY] 					= {
         ["addInvButton"]  = true,

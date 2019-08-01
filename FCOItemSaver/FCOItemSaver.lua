@@ -20,13 +20,6 @@
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
---11) 2019-08-01 - Bugfix - Baertram
---Using the additional inventory flag icon's right click to disable/enable the protection at the panel (if enabled in the settings) will not update the shown item's tooltip to reflect the current protection state
-
---12) 2019-08-01 - Bugfix - Baertram
---Using the additional inventory flag icon's right click to enable the protection at the panel (if enabled in the settings) will not remove any slotted items which are protected now from the mail, trade, crafting deconstruct/improvement/extract slots again
-
-
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -39,11 +32,13 @@
 --  Bug #3: Bank keybind triggers lua error about insecure call
 --          Replaced PreHook of ZO_InventorySlot_ShowContextMenu with LibCustomMenu:RegisterContextMenu(...)
 --  Bug #5: Filtering for items will recognize all filter buttons now and will hide items which are hidden via a green filter button 1 to 3 even if button 4 says "only show"
---
 --  Bug #10: The destroy selection handler did not work properly for dynamic icons if you have used drag&drop. It should now recognize if you got the settings for the dynamic
 --           icon for anti-destroy enabled or not AND if you currentld disabled them via the additonal inventory flag icon (if the dynamic icon got the setting to support the
 --           temporary disabling of the icon protection, via the additional flag icon, enabled!)
---
+--  Bug #11: Item tooltips protection state is shown for normal and gear/dynamic gear items now in red/green too. And the state will update if you use the additional inventory
+--           flag buttons "right click" option to change the protection state at the current filterPanel.
+--  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
+--           if they are protected again now
 --
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)

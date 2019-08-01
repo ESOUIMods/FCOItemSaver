@@ -2673,8 +2673,17 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         if settingsEnabled == nil then return false end
         --Invert the active setting (false->true / true->false)
         FCOIS.changeAntiSettingsAccordingToFilterPanel()
+        local settingsStateAfterChange = not settingsEnabled
         --Change the additional inventory context menu button's color to the new anti-setting state
-        changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, not settingsEnabled)
+        changeContextMenuInvokerButtonColor(inventoryAdditionalContextMenuInvokerButton, settingsStateAfterChange)
+        --Check if the protection got enabled again and if any items are shown at the different slots (extract, deconstruct, mail, trade, ...)
+        if settingsStateAfterChange == true then
+            --Let the function use bagId = nil and slotIndex = nil to automatically find the items at the different slots and remove them if needed
+            FCOIS.IsItemProtectedAtASlotNow(nil, nil, false)
+        end
+        --Update the tooltips at the items to reflect the protection state properly. But only update the currently visible ones
+        --A refresh of the visible scroll list should be enough to refresh the marker icons and tooltips
+        FCOIS.FilterBasics()
     end
 end
 

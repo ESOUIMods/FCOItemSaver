@@ -1147,6 +1147,7 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
     return bagId, slotIndex
 end
 
+--Is the item protected at a crafting table's slot now
 function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
     --Are we inside a crafting or retrait station?
     local isRetraitShown = FCOIS.isRetraitStationShown()
@@ -1154,6 +1155,10 @@ function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotInde
     if isCraftingStationShown or isRetraitShown then
         --Check if a refine/deconstruct/create glyph/extract/improve/create alchemy panel is shown
         if FCOIS.checkVars.allowedCraftingPanelIdsForMarkerRechecks[FCOIS.gFilterWhere] then
+            --Is the bagId and slotIndex nil then get the slotted item's bagId and slotIndex now
+            if bagId == nil and slotIndex == nil then
+                bagId, slotIndex = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
+            end
             --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
             --d("[FCOIS]MarkMe - callDeconstructionSelectionHandler without echo -> Crafting/Retrait station")
             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
@@ -1172,6 +1177,7 @@ function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotInde
         end
     end
 end
+local IsItemProtectedAtACraftSlotNow = FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow
 
 --Function to check if a crafting panel is shown and if an item from the craftbag got dragged to the
 --slot of the crafting station
@@ -1216,9 +1222,12 @@ end
 function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
     if not ctrlVars.GUILD_STORE:IsHidden() and ctrlVars.GUILD_STORE_KEYBOARD:IsInSellMode() then
         --Check if marked item is currently in the "sell slot" and remove it again, if it is protected
-        if ctrlVars.GUILD_STORE_SELL_SLOT_ITEM ~= nil
-                and ( ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId ~= nil and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex ~= nil
-                and   ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId == bagId and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex == slotIndex ) then
+        if (ctrlVars.GUILD_STORE_SELL_SLOT_ITEM ~= nil and (ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId ~= nil and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex ~= nil)
+                and     (bagId ~= nil and slotIndex ~= nil and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId == bagId and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex == slotIndex)
+                    or  (bagId == nil and slotIndex == nil) )
+        then
+            bagId = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId
+            slotIndex = ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex
             --d("[FCOIS]MarkMe GuildStore - callDeconstructionSelectionHandler without echo")
             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
@@ -1254,20 +1263,23 @@ function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId)
                         local attachmentSlotsParent = ctrlVars.MAIL_ATTACHMENTS
                         local slotControl = attachmentSlotsParent[i]
                         --Search the slotControl slotIndex and compare it with the actually checked item's slotIndex
-                        if slotControl ~= nil and slotControl.bagId ~= nil and slotControl.bagId == bagId and slotControl.slotIndex ~= nil and slotControl.slotIndex == slotIndex then
+                        if (slotControl ~= nil
+                            and     (bagId ~= nil and slotIndex ~= nil and slotControl.bagId ~= nil and slotControl.bagId == bagId and slotControl.slotIndex ~= nil and slotControl.slotIndex == slotIndex)
+                                or  (bagId == nil and slotIndex == nil and slotControl.bagId ~= nil and slotControl.slotIndex ~= nil) )
+                        then
                             --Item was found: Check if it is protected now
                             --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
                             --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                             --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
                             --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-                            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+                            local isProtected = FCOIS.callDeconstructionSelectionHandler(slotControl.bagId, slotControl.slotIndex, false, false, true, false, true, true)
                             --Item is protected?
                             if isProtected then
                                 --Item is protected now, so remove it from the mail attachment slot again
                                 RemoveQueuedItemAttachment(i)
                                 local whereAreWe = FCOIS_CON_MAIL
                                 --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
-                                FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
+                                FCOIS.outputItemProtectedMessage(slotControl.bagId, slotControl.slotIndex, whereAreWe, true, false, false, false)
                             end
                         end
                     end
@@ -1284,19 +1296,22 @@ function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId)
             local function CheckTradeAttachments()
                 for i = 1, TRADE_NUM_SLOTS do
                     local bagIdTradeSlot, slotIndexTradeSlot = GetTradeItemBagAndSlot(TRADE_ME, i)
-                    if bagIdTradeSlot and slotIndexTradeSlot and bagIdTradeSlot == bagId and slotIndexTradeSlot == slotIndex then
+                    if (bagIdTradeSlot and slotIndexTradeSlot
+                        and     (bagId ~= nil and slotIndex ~= nil and bagIdTradeSlot == bagId and slotIndexTradeSlot == slotIndex)
+                            or  (bagId == nil and slotIndex == nil))
+                    then
                         --Item was found: Check if it is protected now
                         --d("[FCOIS]MarkMe ProtectedAtSlotNow - callDeconstructionSelectionHandler without echo")
                         --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                         --Be sure to set calledFromExternalAddon = true here as otherwise the guild store sell checks aren't done, because
                         --the DeconstructionSelectionhandler will not call the ItemSelectionHandler then!
-                        local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, true)
+                        local isProtected = FCOIS.callDeconstructionSelectionHandler(bagIdTradeSlot, slotIndexTradeSlot, false, false, true, false, true, true)
                         --Item is protected?
                         if isProtected then
                             TradeRemoveItem(i)
                             local whereAreWe = FCOIS_CON_TRADE
                             --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
-                            FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
+                            FCOIS.outputItemProtectedMessage(bagIdTradeSlot, slotIndexTradeSlot, whereAreWe, true, false, false, false)
                         end
                     end
                 end
@@ -1307,34 +1322,12 @@ function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId)
     end
 end
 
-
---Function to check if an item is protected at a slot (crafting, junk, mail, trade, etc.) at the moment, and if so,
---remove it from the slot/junk now
-function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
-    bulkMark = bulkMark or false
-    --Check if the item was marked and then needs to be protected, if it's slotted at a crafting/retrait station!
-    FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
-    --Are we inside the guild store's sell tab?
-    FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
-    --Check if the item is protected at the junk tab now
-    FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
-    --Check if the item is protected at any other panel now
-    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere)
-end
-
---Check if withdraw from guild bank is allowed, or block deposit of items
-function FCOIS.checkIfGuildBankWithdrawAllowed(currentGuildBank)
-    --if DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_DEPOSIT) and DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW) then
-    local retVal = DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW)
-    --d("[FCOIS] FCOIS.checkIfGuildBankWithdrawAllowed: " .. tostring(retVal))
-    return retVal
-end
-
 --Is the item marked as junk? Remove it from junk again if a non-junkable marker icon was set now
 --> Only remove from bulk
 ---- if setting to not remove normal (keybind/context menu) marked items from junk is disabled
----- if setting to not remove bulk (inventory "flag" icon) marked items from junk is disabled
+---- if setting to not remove bulk (additional inventory "flag" icon) marked items from junk is disabled
 function FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
+    if bagId == nil or slotIndex == nil then return false end
     bulkMark = bulkMark or false
     if IsItemJunk(bagId, slotIndex) and FCOIS.IsJunkLocked(bagId, slotIndex) then
         local settings = FCOIS.settingsVars.settings
@@ -1349,6 +1342,29 @@ function FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
         --Unjunk the marked item now
         SetItemIsJunk(bagId, slotIndex, false)
     end
+end
+
+--Function to check if an item is protected at a slot (crafting, junk, mail, trade, etc.) at the moment, and if so,
+--remove it from the slot/junk now.
+--Parameter bulkMark is used for the junk checks, if the additional inventory "flag" icon context menu is used for mass-junk/unjunk
+function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
+    bulkMark = bulkMark or false
+    --Check if the item was marked and then needs to be protected, if it's slotted at a crafting/retrait station!
+    IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
+    --Are we inside the guild store's sell tab?
+    FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
+    --Check if the item is protected at the junk tab now
+    FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
+    --Check if the item is protected at any other panel now
+    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere)
+end
+
+--Check if withdraw from guild bank is allowed, or block deposit of items
+function FCOIS.checkIfGuildBankWithdrawAllowed(currentGuildBank)
+    --if DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_DEPOSIT) and DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW) then
+    local retVal = DoesPlayerHaveGuildPermission(currentGuildBank, GUILD_PERMISSION_BANK_WITHDRAW)
+    --d("[FCOIS] FCOIS.checkIfGuildBankWithdrawAllowed: " .. tostring(retVal))
+    return retVal
 end
 
 --Transmutation geode loot protection so you do not loot 50 crystals if you already got 199 of max 200
