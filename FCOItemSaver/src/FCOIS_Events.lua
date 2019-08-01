@@ -661,12 +661,6 @@ local function FCOItemSaver_OnMouseRequestDestroyItem(eventCode, bagId, slotInde
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
     if not needsConfirm then
-        --Only react if anti destroy setting is enabled
-        if (not FCOIS.settingsVars.settings.blockDestroying) then
-            FCOIS.preventerVars.gAllowDestroyItem = true
-            return nil
-        end
-
         FCOIS.preventerVars.gAllowDestroyItem = false
 
         if( bagId and slotIndex ) then

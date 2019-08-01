@@ -110,11 +110,74 @@ end
 --==============================================================================
 --PreHook the global ZO_Menu hide function to show the PlayerProgressBar again at the character panel
 ZO_PreHook("ZO_Menu_OnHide", function()
+--d("[FCOIS]ZO_Menu_OnHide")
+    --Check if a context menu item was disabled for the mouse and enable it again
+    local settings = FCOIS.settingsVars.settings
+    local prevVars = FCOIS.preventerVars
+    if settings.showContextMenuDivider and prevVars.disabledContextMenuItemIndex ~= nil and prevVars.disabledContextMenuItemIndex ~= -1 then
+        local contextMenuItemControl = ZO_Menu.items[prevVars.disabledContextMenuItemIndex].item
+        if contextMenuItemControl then
+            contextMenuItemControl:SetMouseEnabled(true)
+            FCOIS.preventerVars.disabledContextMenuItemIndex = -1
+        end
+    end
     --Check if the character window is shown and if the current scene is the inventory scene
     if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == "inventory" then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
+end)
+
+--Show tooltips in ZO_Menu items
+ZO_PreHook("ZO_Menu_SetSelectedIndex", function(index)
+    if(not index or not ZO_Menu.items) then return end
+    --Hide old text tooltips
+    ZO_Tooltips_HideTextTooltip()
+    --Check the selected menu index (row index)
+    --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
+    --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
+    local menuOwner = ZO_Menu.owner
+    if menuOwner then
+        local menuOwnerName = menuOwner:GetName()
+        if not menuOwnerName then return false end
+        --FCOIS specific checks for allowed parent control names of the ZO_Menu owner
+        local checkVars = FCOIS.checkVars
+        local notAllowedContextMenuParentControls = checkVars.notAllowedContextMenuParentControls
+        local notAllowedContextMenuControls = checkVars.notAllowedContextMenuControls
+        local notAllowed = notAllowedContextMenuParentControls[menuOwnerName] or false
+        if not notAllowed then notAllowed = notAllowedContextMenuControls[menuOwnerName] or false end
+        if notAllowed then return false end
+        --Get the selected control name of the menu entry
+        local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+        if not mouseOverControl then return false end
+        --Is the control mouse enabled?
+        if not mouseOverControl:IsMouseEnabled() then return end
+        --Build the text tooltip
+        local addonVars = FCOIS.addonVars
+        local textTooltip
+        local mouseOverControlCustomData = mouseOverControl.customData
+        if mouseOverControlCustomData and mouseOverControlCustomData.creatingAddon and mouseOverControlCustomData.creatingAddon == addonVars.gAddonNameShort
+            and mouseOverControlCustomData.tooltipText and mouseOverControlCustomData.tooltipText ~= "" then
+            local childName = mouseOverControl:GetNamedChild("Name")
+            if not childName then return false end
+            textTooltip = childName:GetText()
+            textTooltip = textTooltip .. "\n" .. mouseOverControlCustomData.tooltipText
+        end
+        if textTooltip then
+            local tooltipAnchor = LEFT
+            --If the control is a character screen control we need to anchor the tooltip at the right
+            if menuOwner:GetParent() == ctrlVars.CHARACTER then
+                tooltipAnchor = RIGHT
+            end
+            --Show the text tooltip now
+            ZO_Tooltips_ShowTextTooltip(mouseOverControl, tooltipAnchor, textTooltip)
+        end
+    end
+end)
+
+--ZO_Menu item mouse exit -> Hide tooltip e.g.
+ZO_PreHook("ZO_Menu_ExitItem", function()
+    ZO_Tooltips_HideTextTooltip()
 end)
 
 function FCOIS.useAddSlotActionCallbackFunc(self)

@@ -9,8 +9,10 @@ FCOIS.addonVars = {}
 FCOIS.addonVars.addonVersionOptions 		= '1.6.0' -- version shown in the settings panel
 FCOIS.addonVars.addonVersionOptionsNumber	= 1.60
 FCOIS.addonVars.gAddonName					= "FCOItemSaver"
+FCOIS.addonVars.gAddonNameShort             = "FCOIS"
 FCOIS.addonVars.addonNameMenu				= "FCO ItemSaver"
 FCOIS.addonVars.addonNameMenuDisplay		= "|c00FF00FCO |cFFFF00ItemSaver|r"
+FCOIS.addonVars.addonNameContextMenuEntry   = "     - |c22DD22FCO|r ItemSaver -"
 FCOIS.addonVars.addonAuthor 				= '|cFFFF00Baertram|r'
 FCOIS.addonVars.addonAuthorDisplayNameEU  	= '@Baertram'
 FCOIS.addonVars.addonAuthorDisplayNameNA  	= '@Baertram'
@@ -33,14 +35,27 @@ FCOIS.svAllAccountsName                     = "$AllAccounts"
 FCOIS.svSettingsForAllName                  = "SettingsForAll"
 FCOIS.svSettingsName                        = "Settings"
 
+--Data for the protection (colors, textures, ...)
+FCOIS.protectedData = {}
+FCOIS.protectedData.colors = {
+    [false] = "|cDD2222",
+    [true]  = "|c22DD22",
+}
+FCOIS.protectedData.textures = {
+    [false] = "esoui/art/buttons/cancel_up.dds",
+    [true]  = "esoui/art/buttons/accept_up.dds",
+}
+local protectedColors = FCOIS.protectedData.colors
+local protectionOffColor    = protectedColors[false]
+local protectionOnColor     = protectedColors[true]
 --Local pre chat color variables
 FCOIS.preChatVars = {}
 --Uncolored "FCOIS" pre chat text for the chat output
-FCOIS.preChatVars.preChatText = "FCOIS"
+FCOIS.preChatVars.preChatText = FCOIS.addonVars.gAddonNameShort
 --Green colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextGreen = "|c22DD22"..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextGreen = protectionOnColor..FCOIS.preChatVars.preChatText.."|r "
 --Red colored "FCOIS" pre text for the chat output
-FCOIS.preChatVars.preChatTextRed = "|cDD2222"..FCOIS.preChatVars.preChatText.."|r "
+FCOIS.preChatVars.preChatTextRed = protectionOffColor..FCOIS.preChatVars.preChatText.."|r "
 --Blue colored "FCOIS" pre text for the chat output
 FCOIS.preChatVars.preChatTextBlue = "|c2222DD"..FCOIS.preChatVars.preChatText.."|r "
 --Values for the "marked" entries
@@ -450,7 +465,7 @@ FCOIS.mappingVars.InvToInventoryType = {
 }
 --The mapping array between LibFilters IDs to their filter name string "prefix"
 FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID    = 0
-FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = "FCOIS_"
+FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS        = FCOIS.addonVars.gAddonNameShort .. "_"
 FCOIS.mappingVars.libFiltersIds2StringPrefix = {
     --Backup entry if string for LibFilters ID is not given inside this array!
     [FCOIS_CON_LIBFILTERS_STRING_PREFIX_BACKUP_ID] = FCOIS_CON_LIBFILTERS_STRING_PREFIX_FCOIS .. "LibFiltersIdFilter_",

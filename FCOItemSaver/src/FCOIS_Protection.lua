@@ -116,6 +116,7 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         --d("Dynamic icon")
         --Get the protection
         protectionVal = settings.icon[iconNr].antiCheckAtPanel[checkType]
+--d(">iconNr: " .. tostring(iconNr) .. ", checkAtPanelChecks: " .. tostring(protectionVal))
         --Is the dynamic icon protected at the current panel?
         if protectionVal then
             --The protective functions are not enabled (red flag is set in the inventory additional options flag icon, or the current panel got no additional inventory button, e.g. the crafting research tab or the research popup dialog)?
@@ -124,8 +125,8 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
                 --Check if the temporary disabling of the protection is enabled, if the user uses the inventory "flag" icon and sets it to red
                 local isDynIconSettingForProtectionTemporaryDisabledByInvFlag = settings.icon[iconNr].temporaryDisableByInventoryFlagIcon or false
                 if isDynIconSettingForProtectionTemporaryDisabledByInvFlag then
-                    --The dynamic icon is temporary not protected at this panel!
-    --d(">Dyn icon protection disabled by inventory \"flag\" icon!")
+--The dynamic icon is temporary not protected at this panel!
+--d(">>Dyn icon protection disabled by inventory flag icon!")
                     protectionVal = false
                 end
             end
@@ -196,7 +197,9 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
     return protectionVal
 end
 
---Function to check if the item is marked ("protected") with the icon number & settings
+--Function to check if the item is marked ("protected") with the icon number. The icon must be enabled or the settings must tell to check disabled icons as well, in order to
+--say the item is protected! No further settings are checked, so if you need to see if a marker icon is protected at a filterPanelId you need to use the function
+--FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon, checkAntiDetails, whereAreWe) instead
 --2nd parameter itemId is the item's instance id or the unique item's id
 --3rd parameter allows a handler like "gear" or "dynamic" to check all gear set or all dyanmic icons at once (in a loop)
 --4th parameter addonName (String):	Can be left NIL! The unique addon name which was used to temporarily enable the uniqueIdm usage for the item checks.
@@ -266,7 +269,7 @@ end
 function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     echo = echo or false
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", filterPanelId: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_SPAM) end
-    --d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere))
+--d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere))
     --Are we coming from the character window?
     if bag == BAG_WORN and parentControl ~= nil then
         FCOIS.preventerVars.gCheckEquipmentSlots = true
@@ -399,10 +402,11 @@ function FCOIS.ItemSelectionHandler(bag, slot, echo, isDragAndDrop, overrideChat
                 --PanelId was NIL as the function got called.
                 --Check if the function was called internally, or from another addon (by the help of API functions).
                 if not calledFromExternalAddon then
-                    --Called internally, no filterPanelId was given. Current filterPanelId is the globally active one.
+                    --Called internally, no filterPanelId was given. Current filterPanelId is the globally active one FCOIS.gFilterWhere
                     --Could be called during drag&drop or doubleclick functions of the addon
                     if FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler then
-                        --Return the fallback value "false" so the drag&drop/doubleclick works and will not show "Destroy not allowed!"
+                        --Return the fallback value "false" so the drag&drop/double click works and will not show "Destroy not allowed!"
+--d(">SingleItemChecks: Drag&Drop handler -> whereAreWe = FCOIS_CON_FALLBACK")
                         locWhereAreWe = FCOIS_CON_FALLBACK
                         FCOIS.preventerVars.dragAndDropOrDoubleClickItemSelectionHandler = false
                     end

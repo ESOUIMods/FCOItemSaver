@@ -1210,16 +1210,30 @@ end
 --Global function to get the number of possible different gear sets and their icon IDs
 --Returns the number of gear sets as 1st value, and an array for the mapping from gear to the icon ID as 2nd value
 function FCOIS.GetGearSetInfo()
-	if #FCOIS.mappingVars.gearToIcon <= 0 then return nil end
-    return #FCOIS.mappingVars.gearToIcon, FCOIS.mappingVars.gearToIcon
+	local gearToIcon = FCOIS.mappingVars.gearToIcon
+	if gearToIcon or #gearToIcon <= 0 then return nil end
+    return #gearToIcon, gearToIcon
 end -- FCOGetGearSetInfo
 
 --Global function to get the number of possible different dyanmic icons and their icon IDs
 --Returns the number of dynamic icons as 1st value, and an array for the mapping from dynamic icon to the icon ID as 2nd value
 function FCOIS.GetDynamicInfo()
-	if #FCOIS.mappingVars.dynamicToIcon <= 0 then return nil end
-    return #FCOIS.mappingVars.dynamicToIcon, FCOIS.mappingVars.dynamicToIcon
+	local dynamicToIcon = FCOIS.mappingVars.dynamicToIcon
+	if dynamicToIcon or #dynamicToIcon <= 0 then return nil end
+    return #dynamicToIcon, dynamicToIcon
 end -- FCOGetDynamicInfo
+
+--Global function to check if an item is a dynamic icon marked as gearset
+function FCOIS.isDynamicGearIcon(iconId)
+	if iconId == nil then return end
+	local iconToGear = FCOIS.mappingVars.iconToGear
+	local iconToDynamic = FCOIS.mappingVars.iconToDynamic
+	if iconToDynamic and iconToGear and iconToGear[iconId] and iconToDynamic[iconId] then
+		return true
+	end
+	return false
+end
+
 
 --Global function to get the for a given gear set's iconId (2, 4, 6, 7 or 8) or a dynamic icon id (13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
 --> use the constants for the amrker icons please! e.g. FCOIS_CON_ICON_LOCK, FCOIS_CON_ICON_DYNAMIC_1 etc. Check file src/FCOIS_constants.lua for the available constants (top of the file)
@@ -1232,7 +1246,6 @@ function FCOIS.GetIconText(iconId)
 	   	return FCOIS.settingsVars.settings.icon[iconId].name
     end
 end -- FCOGetIconText
-
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------

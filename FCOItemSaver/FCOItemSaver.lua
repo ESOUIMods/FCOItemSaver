@@ -15,9 +15,21 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
+-- Current max bugs: 12
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
+
+--11) 2019-08-01 - Bugfix - Baertram
+--Using the additional inventory flag icon's right click to disable/enable the protection at the panel (if enabled in the settings) will not update the shown item's tooltip to reflect the current protection state
+
+--12) 2019-08-01 - Bugfix - Baertram
+--Using the additional inventory flag icon's right click to enable the protection at the panel (if enabled in the settings) will not remove any slotted items which are protected now from the mail, trade, crafting deconstruct/improvement/extract slots again
+
+
+------------------------------------------------------------------
+-- Currently worked on [Added/Fixed/Changed]
+---------------------------------------------------------------------
 
 --
 --Fixed:
@@ -28,15 +40,27 @@
 --          Replaced PreHook of ZO_InventorySlot_ShowContextMenu with LibCustomMenu:RegisterContextMenu(...)
 --  Bug #5: Filtering for items will recognize all filter buttons now and will hide items which are hidden via a green filter button 1 to 3 even if button 4 says "only show"
 --
+--  Bug #10: The destroy selection handler did not work properly for dynamic icons if you have used drag&drop. It should now recognize if you got the settings for the dynamic
+--           icon for anti-destroy enabled or not AND if you currentld disabled them via the additonal inventory flag icon (if the dynamic icon got the setting to support the
+--           temporary disabling of the icon protection, via the additional flag icon, enabled!)
+--
+--
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
 --Item count next to name sort header can be enabled in the "filter" settings. This count will update if you change filters within FCOItemSaver or AdvancedFilters.
 --->If you are using AdvancedFilters as well you should either disable the item count setting in AdvancedFilters or FCOItemSaver to increase the performance.
 --Add feature request #4 Setting to automatic marks->set items->non wished: Mark non-wished set items if character level below 50 and item below max level or max CP level
-
+--API function FCOIS.isDynamicGearIcon(iconId)
 --
 --Added on request:
 --SavedVariables can be enabled for all acounts the same
+--> TODO: TESTs NEED TO BE DONE YET!!!
+
+--> TODO: NON WORKING BECAUSE OF DEPENDENCY -> SO THE CODE IS IN BUT CURRENTLY DISABLED <-
+--Settings for tooltips at the context menu entries
+--Settings to add the protected panel information to the context menu item entries
+--->These tooltips only work if using LibCustomMenu 3.8.0 (which is not released yet and may be chnaged in the future as well!)
+
 
 ------------------------------------------------------------------
 --Global array with all data of this addon

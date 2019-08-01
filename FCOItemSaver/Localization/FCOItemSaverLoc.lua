@@ -1016,6 +1016,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_icon_color_TT"]      = "Use the icon's color fo the context menu entry.\nThe custom color you have choosen will be still applied to marked entries!",
         ["options_contextmenu_leading_icon_size"]           = "Icon size",
         ["options_contextmenu_leading_icon_size_TT"]   = "Change the size of the context menu icon",
+        ["options_contextmenu_show_menu_item_tooltip"] = "Show menu item tooltip",
+        ["options_contextmenu_show_menu_item_tooltip_TT"] = "Show a tooltip at each menu item this addon adds to context menus.",
+        ["options_contextmenu_show_menu_item_tooltip_protected_panels"] = "Tooltip: Protected panels",
+        ["options_contextmenu_show_menu_item_tooltip_protected_panels_TT"] = "Add information about the protected panels to the menu item tooltip.",
+        ["protection_at_panel"]                             = "Protection at panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Enable / Disable",
         --Context menus should use submenus for dynamic icons
@@ -2003,6 +2008,11 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_use_icon_color_TT"]      = "Nutze die Farbe des Markierungssymbol für den Kontextmenü Eintrag.\nDeine ausgewählte Farbe für bereits markierte Einträge wird auch weiterhin angewendet!",
         ["options_contextmenu_leading_icon_size"]           = "Symbol Größe",
         ["options_contextmenu_leading_icon_size_TT"]   = "Ändere die Symbol Größe für den Kontextmenü Eintrag",
+        ["options_contextmenu_show_menu_item_tooltip"] = "Kontextmenü Eintrag Tooltip",
+        ["options_contextmenu_show_menu_item_tooltip_TT"] = "Zeige einen Tooltip an jedem Kontextmenü Eintrag an, den dieses AddOn hinzufügt.",
+        ["options_contextmenu_show_menu_item_tooltip_protected_panels"] = "Tooltip: Schutz-Status je Panel",
+        ["options_contextmenu_show_menu_item_tooltip_protected_panels_TT"] = "Füge Informationen zu dem Status des Schutzes je Filter-Panel im Kontextmenü Eintrag Tooltip an.",
+        ["protection_at_panel"]                             = "Schutz-Status je Panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Aktivieren / Deaktivieren",
         --Context menus should use submenus for dynamic icons

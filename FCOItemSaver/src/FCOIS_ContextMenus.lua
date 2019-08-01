@@ -13,6 +13,14 @@ local ctrlVars = FCOIS.ZOControlVars
 --									FCOIS context menus
 --==========================================================================================================================================
 
+--Create a table with additional context menu variables and values
+--+ the entry "creatingAddon" to identify the custom context menu entries and related addon
+function FCOIS.createContextMenuAdditionalData(additionalDataTable)
+    local addonVars = FCOIS.addonVars
+    additionalDataTable["creatingAddon"] = addonVars.gAddonNameShort
+    return additionalDataTable
+end
+
 
 --========= INVENTORY SLOT - PRIMARY ACTION =================================
 --Context menu function for the "right-click" context menu at normal inventory items
@@ -497,6 +505,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     local customMenuVars = FCOIS.customMenuVars
     local preventerVars = FCOIS.preventerVars
     local doResearchTraitCheck = FCOIS.checkVars.researchTraitCheck
+    local addonVars = FCOIS.addonVars
 
     --Define the font of the context menu entries
     if myFont == nil then
@@ -669,6 +678,8 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         contextMenuEntryTextPre = contextMenuEntryTextPre .. buttonText
     end
 
+    local locVars = FCOIS.localizationVars
+    local locVarsFCOIS = locVars.fcois_loc
     local contMenuVars = FCOIS.contextMenuVars
     contMenuVars.contextMenuIndex = -1
     local newSubEntry = {}
@@ -676,23 +687,28 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
     --If the first icon/option is present: No submenu for the FCOIS marker icons enabled.
     if not useSubMenu and firstAdd then
         --Add an information line to the context menu to split the FCOIS options from the rest/standard
+        local tooltipText = ""
         if settings.showContextMenuDivider then
             local callbackFnc
             local menuItemType
             if settings.contextMenuDividerShowsSettings then
                 callbackFnc = function() FCOIS.ShowFCOItemSaverSettings() end
                 menuItemType = MENU_ADD_OPTION_LABEL
+                tooltipText = locVarsFCOIS["options_contextmenu_divider_opens_settings_TT"]
 
             elseif settings.contextMenuDividerClearsMarkers
                     and not isEquipmentSlot and ctrlVars.LIST_DIALOG:IsHidden() then
                 callbackFnc = function() FCOIS.ClearOrRestoreAllMarkers(rowControl) end
                 menuItemType = MENU_ADD_OPTION_LABEL
+                tooltipText = locVarsFCOIS["options_contextmenu_divider_clears_all_markers_TT"]
 
             else
                 callbackFnc = function() end
                 menuItemType = MENU_ADD_OPTION_LABEL
+                tooltipText = ""
             end
-            contMenuVars.contextMenuIndex = AddCustomMenuItem("     - |c22DD22FCO|r ItemSaver -", function() callbackFnc() end, menuItemType)
+            --                              AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, customMenuItemData)
+            contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
         end
     end
 
@@ -709,12 +725,25 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         AddCustomMenuItem("---[DEBUG>   Bag: " .. tostring(bagId) .. " / Slot: " .. tostring(slotIndex) .. " ]---", function() FCOIS.debugItem(bagId, slotIndex) end, MENU_ADD_OPTION_LABEL)
     end
 
-    local locVars = FCOIS.localizationVars
+    --Is the current markId already set at the item?
+    local isMarkIdProtected = FCOIS.checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))
+
+    --Build the tooltiptext for the current markId's menuItem
+    --TODO: Remove fix variable assignments after tests! 2019-08-01
+    settings.contextMenuItemEntryShowTooltip = true
+    settings.contextMenuItemEntryTooltipProtectedPanels = true
+    local tooltipText = ""
+    if settings.contextMenuItemEntryShowTooltip then
+        if settings.contextMenuItemEntryTooltipProtectedPanels then
+            tooltipText = FCOIS.buildMarkerIconProtectedWhereTooltip(markId, isMarkIdProtected)
+        end
+    end
+
     --Add the equipment right click / context menu entries
     if (isEquipmentSlotContextmenu == true) then
 
         -- Add/Update the right click menu item for character slot now
-        if(not FCOIS.checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))) then
+        if(not isMarkIdProtected) then
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId],
@@ -736,7 +765,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 else
                     --AddMenuItem(locVars.lTextEquipmentMark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
 --d("[FCOIS]AddMark - markId: " ..tostring(markId) .. ", text: " ..tostring(locVars.lTextEquipmentMark[markId]))
-                    AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef)
+                    AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                 end
             end
         else
@@ -773,7 +802,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             highlightColor  = colDef,
                         }
                     else
-                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef)
+                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                     end
                 else
                     --use the submenu for the dynamic icons?
@@ -786,7 +815,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             highlightColor  = colDef,
                         }
                     else
-                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef)
+                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                     end
                 end
             end
@@ -798,7 +827,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         --AddCustomMenuItem(mytext, myfunction, itemType, myfont, normalColor, highlightColor, itemYPad)
 
         -- Add/Update the right click menu item now
-        if(not FCOIS.checkIfItemIsProtected(markId, FCOIS.MyGetItemInstanceId(rowControl))) then
+        if(not isMarkIdProtected) then
             if useSubMenu then
                 newSubEntry = {
                     label = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId],
@@ -819,7 +848,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     }
                 else
                     --AddMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
-                    AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef)
+                    AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                 end
             end
         else
@@ -856,7 +885,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             highlightColor  = colDef,
                         }
                     else
-                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef)
+                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                     end
                 else
                     --use the submenu for the dynamic icons?
@@ -869,7 +898,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             highlightColor  = colDef,
                         }
                     else
-                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef)
+                        AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil, FCOIS.createContextMenuAdditionalData({["tooltipText"] = tooltipText}))
                     end
                 end
             end
@@ -896,21 +925,18 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         end
 
         --Modify the spacer context menu entry so it isn't enabled for the mouse
-        if firstAdd and settings.showContextMenuDivider then
-            if contMenuVars.contextMenuIndex ~= -1 and ZO_Menu.items[contMenuVars.contextMenuIndex] ~= nil then
+        if firstAdd and settings.showContextMenuDivider and contMenuVars ~= nil and contMenuVars.contextMenuIndex  ~= nil and contMenuVars.contextMenuIndex ~= -1 then
+            local contextMenuItemControl = ZO_Menu.items[contMenuVars.contextMenuIndex].item
+            if contextMenuItemControl ~= nil then
                 --Overwrite onMouseEnter events
-                local contextMenuItemControl = ZO_Menu.items[contMenuVars.contextMenuIndex].item
-                if contextMenuItemControl~= nil then
-                    if ( (isEquipmentSlot) or  (not ctrlVars.LIST_DIALOG:IsHidden())
-                            or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers) ) then
-                        contextMenuItemControl:SetMouseEnabled(false)
-                        --Reenable the mouse for this menu item if the menu closes by overwriting the SetMenuHiddenCallback function
-                        SetMenuHiddenCallback(function()
-                            contextMenuItemControl:SetMouseEnabled(true)
-                        end)
-                    else
-                        contextMenuItemControl:SetMouseEnabled(true)
-                    end
+                if ( (contextMenuItemControl.creatingAddon and contextMenuItemControl.creatingAddon == addonVars.gAddonNameShort) and
+                     ((isEquipmentSlot) or (not ctrlVars.LIST_DIALOG:IsHidden())
+                  or (not settings.contextMenuDividerShowsSettings and not settings.contextMenuDividerClearsMarkers)) ) then
+                    contextMenuItemControl:SetMouseEnabled(false)
+                    --Reenable the mouse for this menu item if the menu closes. See file /src/FCOIS_Hooks.lua, function  PreHook to ZO_Menu_OnHide
+                    FCOIS.preventerVars.disabledContextMenuItemIndex = contMenuVars.contextMenuIndex
+                else
+                    contextMenuItemControl:SetMouseEnabled(true)
                 end
             end
         end
