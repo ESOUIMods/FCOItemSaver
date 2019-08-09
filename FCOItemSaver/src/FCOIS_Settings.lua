@@ -352,14 +352,19 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         end
     --"STORE"
     elseif checkWhere == checksToDo[2] then
+--FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
+--[[
         --Reenable the Anti-Buy methods if activated in the settings
         if settings.autoReenable_blockVendorBuy then
             settings.blockVendorBuy = true
         end
+]]
         --Reenable the Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockSelling then
             settings.blockSelling = true
         end
+--FCOIS version 1.6.0 disabled as not yet implemented settings in the settingsMenu for this
+--[[
         --Reenable the Anti-Buyback methods if activated in the settings
         if settings.autoReenable_blockVendorBuyback then
             settings.blockVendorBuyback = true
@@ -368,6 +373,7 @@ function FCOIS.autoReenableAntiSettingsCheck(checkWhere)
         if settings.autoReenable_blockVendorRepair then
             settings.blockVendorRepair = true
         end
+]]
         --Reenable the Fence Anti-Sell methods if activated in the settings
         if settings.autoReenable_blockFenceSelling then
             settings.blockFence = true
@@ -531,7 +537,7 @@ function FCOIS.afterSettings()
     local numLibFiltersFilterPanelIds = FCOIS.numVars.gFCONumFilterInventoryTypes
     local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
     local icon2Dynamic = FCOIS.mappingVars.iconToDynamic
-    --local dynamic2Icon = FCOIS.mappingVars.dynamicToIcon
+    local iconIsDynamic = FCOIS.mappingVars.iconIsDynamic
 
     --Set the split filters to true as old "non-split filters" method is not supported anymore!
     settings.splitFilters = true
@@ -686,7 +692,18 @@ function FCOIS.afterSettings()
     --Resetting the vendorBuyBack and vendorRepair protection to false as there is no setting to change this yet in the settings menu
     FCOIS.settingsVars.settings.blockVendorBuy      = false
     FCOIS.settingsVars.settings.blockVendorBuyback  = false
-    FCOIS.settingsVars.settings.blockVendorRepair   = false
+    FCOIS.settingsVars.settings.blockVendorRepair   = false -- to block the destroy
+    --Update the dynamic icons as well, but enable the protection by default to block destroying,
+    --as drag&drop of an item at the vendor repair panel will try to destroy the item
+    for filterIconHelper = 1, numFilterIcons do
+        if iconIsDynamic[filterIconHelper] then
+            for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
+                if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then
+                    FCOIS.settingsVars.settings.icon[filterIconHelper].antiCheckAtPanel[filterIconHelperPanel] = false
+                end
+            end
+        end
+    end
 end
 
 --Do some updates to the SavedVariables before the addon menu is created

@@ -55,6 +55,11 @@
 --  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
 --  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
 --  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
+--  Bug #17: Working on fix bug #17
+--Open: -- Drag&drop -> Destroy works at Vendor repair panel for marked  & protected items!
+--
+--Working: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled
+---Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair
 
 --
 --Added:

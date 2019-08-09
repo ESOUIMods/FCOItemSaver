@@ -658,7 +658,8 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
 end
 
 --Executed if item should be destroyed manually
-local function FCOItemSaver_OnMouseRequestDestroyItem(eventCode, bagId, slotIndex, itemCount, name, needsConfirm)
+local function FCOItemSaver_OnMouseRequestDestroyItem(_, bagId, slotIndex, _, _, needsConfirm)
+--d("[FCOS]FCOItemSaver_OnMouseRequestDestroyItem")
     FCOIS.preventerVars.splitItemStackDialogActive = false
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)

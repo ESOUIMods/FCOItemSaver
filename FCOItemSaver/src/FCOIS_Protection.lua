@@ -264,25 +264,42 @@ function FCOIS.checkIfItemIsProtected(iconId, itemId, checkHandler, addonName)
     return itemIsMarked
 end
 
+--Check the filterPanelId and if it should be protected against destroy, even if the currently protectedSettings are
+--different than "Anti destroy"
+function FCOIS.ckeckFilterPanelForDestroyProtection(filterPanelId)
+    local filterPanelToAntiDestroySetings = {
+        [LF_VENDOR_REPAIR] = true,
+    }
+    local isProtected = filterPanelToAntiDestroySetings[filterPanelId] or false
+    return isProtected
+end
+
 -- Fired when user selects an item to destroy.
 -- Warns user if the item is marked with any of the filter icons
 function FCOIS.DestroySelectionHandler(bag, slot, echo, parentControl)
     echo = echo or false
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", filterPanelId: " .. tostring(FCOIS.gFilterWhere), true, FCOIS_DEBUG_DEPTH_SPAM) end
---d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere))
+    --Are we at the vendor repair panel?
+    local isVendorRepair = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
     --Are we coming from the character window?
-    if bag == BAG_WORN and parentControl ~= nil then
+    if not isVendorRepair and (bag == BAG_WORN and parentControl ~= nil) then
         FCOIS.preventerVars.gCheckEquipmentSlots = true
     end
+--d("[DestroySelectionHandler] Bag: " .. tostring(bag) .. ", Slot: " .. tostring(slot) ..", echo: " .. tostring(echo) .. ", filterPanelId: " .. tostring(FCOIS.gFilterWhere) .. ", isVendorRepair: " ..tostring(isVendorRepair) .. ", checkEquipmentSlots: " .. tostring(FCOIS.preventerVars.gCheckEquipmentSlots))
 
     -- get (unique) instance id of the item
     local id = FCOIS.MyGetItemInstanceIdNoControl(bag, slot)
 
     -- if item is in any protection list, warn user
-    for i=1, numFilterIcons, 1 do
-        if( FCOIS.checkIfItemIsProtected(i, id) ) then
+    for iconIdToCheck=1, numFilterIcons, 1 do
+        if( FCOIS.checkIfItemIsProtected(iconIdToCheck, id) ) then
             --Check if the anti-settings are enabled (and if a dynamic icon is used)
-            if FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, i) then
+            local isProtectedIcon = FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconIdToCheck)
+            --FCOIS version 1.6.0
+            --Local hack to change the protectionValue of icons to "true" if certain filterPanels are checked.
+            --But only for the destroy checks!
+            if not isProtectedIcon then isProtectedIcon = FCOIS.ckeckFilterPanelForDestroyProtection(FCOIS.gFilterWhere) end
+            if isProtectedIcon then
                 --Show alert message?
                 if (echo == true) then
                     --Check if alert or chat message should be shown
