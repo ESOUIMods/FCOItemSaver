@@ -1177,7 +1177,7 @@ local itemLink = GetItemLink(bagId, slotIndex)
                 --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
                 --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
                 local isProtected = FCOIS.callDeconstructionSelectionHandler(p_bagId, p_slotIndex, false, false, true, false, true, false)
-            d(">isProtected: " ..tostring(isProtected))
+            --d(">isProtected: " ..tostring(isProtected))
                 --Item is protected?
                 if isProtected then
                     if isRetraitShown then
