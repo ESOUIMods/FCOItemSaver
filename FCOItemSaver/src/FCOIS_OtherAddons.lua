@@ -90,6 +90,8 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
     --Inventory Insight From Ashes (IIFA)
     if (addOnName == "IIfA" or IIfA ~= nil) then
         FCOIS.otherAddons.IIFAActive = true
+        --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
+        table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
 end
 

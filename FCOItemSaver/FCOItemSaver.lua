@@ -15,7 +15,7 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 13
+-- Current max bugs: 15
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
@@ -29,12 +29,11 @@
 ----> See file src/FCOIS_Protection.lua, function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
 -----> Should get another parameter "scanOtherInvItemsIfSlotted"
 
--- 14) 2019-08-09 - Feature - Baertram
--- Support left click addition of items/glyphs to the improvement/glyph extraction/retrait slots (multiple items can be added via left click on PTS).
---> Protect ALL of the items and remove the ones who get protected again.
---> Working as expected: Refine, deconstruction, improvement
---> Todo:   Check refine
--->         Fix enchanting extraction
+-- 15) 2019-08-09 - Bugfix - Baertram
+-- Keybindings and shift+right mouse do not work at refine panel at crafting stations.
+--> Refine panel inventory row names got this pattern: ZO_SmithingTopLevelRefinementPanelInventoryBackpack1Row7
+--> Check if this is properly supported at file FCOIS_Constants.lua, table FCOIS.checkVars.inventoryRowPatterns
+
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -55,6 +54,9 @@
 --           flag buttons "right click" option to change the protection state at the current filterPanel.
 --  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
 --           if they are protected again now
+--  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
+--  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of cr afting stations
+
 --
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)

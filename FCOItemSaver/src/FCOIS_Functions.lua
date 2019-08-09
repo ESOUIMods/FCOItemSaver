@@ -350,78 +350,104 @@ function FCOIS.GetBagAndSlotFromControlUnderMouse()
     --The control type below the mouse
     local controlTypeBelowMouse = false
     --Get the control below the mouse cursor
-    local moc = WINDOW_MANAGER:GetMouseOverControl()
-    if moc == nil then return end
-    --d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. moc:GetName())
+    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    if mouseOverControl == nil then return end
+    --d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
     local slotIndex
     local itemLink
     local itemInstanceOrUniqueIdIIfA
     FCOIS.IIfAmouseOvered = nil
+    local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+    if inventoryRowPatterns == nil then return end
+    --For each inventory row pattern check if the current control mouseOverControl's name matches this pattern
+    local mouseOverControlName = mouseOverControl:GetName()
+    local otherAddons = FCOIS.otherAddons
+    local IIFAitemsListEntryPrePattern = otherAddons.IIFAitemsListEntryPrePattern
+    local IIfAInvRowPatternToCheck = "^" .. IIFAitemsListEntryPrePattern .. "*"
+    for _, patternToCheck in ipairs(inventoryRowPatterns) do
+        if mouseOverControlName:find(patternToCheck) then
+            if patternToCheck ~= IIfAInvRowPatternToCheck then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
+            else
+                --Special treatment for the addon InventoryInsightFromAshes
+                controlTypeBelowMouse = IIFAitemsListEntryPrePattern
+                itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
+                if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
+                    FCOIS.IIfAmouseOvered = {}
+                    FCOIS.IIfAmouseOvered.itemLink = itemLink
+                    FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
+                end
+            end
+            break --bagId and slotIndex were determined
+        end
+    end
+--[[
     --if it's a backpack row or child of one -> PRE API 1000015
-    if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
-        if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_%a+Backpack%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
             end
         end
         --if it's a backpack row or child of one -> Since API 1000015
-    elseif moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
-        if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_%a+InventoryList%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
             end
         end
         --CRAFTBAG: if it's a backpack row or child of one -> Since API 1000015
-    elseif moc:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
-        if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_CraftBagList%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
             end
         end
         --if it's a RETRAIT station row or child of one -> Since API 1000015
         --ZO_RetraitStation_KeyboardTopLevelRetraitPanelInventoryBackpack1Row1
-    elseif moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
-        if moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-            bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*") then
+        if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
+            bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         else
-            moc = moc:GetParent()
-            if moc:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
-                bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+            mouseOverControl = mouseOverControl:GetParent()
+            if mouseOverControl:GetName():find("^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*$") then
+                bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
             end
         end
         --Character
-    elseif moc:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_CharacterEquipmentSlots.+$") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         --Quickslot
-    elseif moc:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_QuickSlotList%dRow%d%d*") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         --Vendor rebuy
-    elseif moc:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
-        bagId, slotIndex = FCOIS.MyGetItemDetails(moc)
+    elseif mouseOverControl:GetName():find("^ZO_RepairWindowList%dRow%d%d*") then
+        bagId, slotIndex = FCOIS.MyGetItemDetails(mouseOverControl)
         --IIfA support
-    elseif moc:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
+    elseif mouseOverControl:GetName():find("^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*") then
         controlTypeBelowMouse = FCOIS.otherAddons.IIFAitemsListEntryPrePattern
-        itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(moc, moc:GetParent())
+        itemLink, itemInstanceOrUniqueIdIIfA, bagId, slotIndex = FCOIS.checkAndGetIIfAData(mouseOverControl, mouseOverControl:GetParent())
         if bagId == nil or slotIndex == nil and itemInstanceOrUniqueIdIIfA ~= nil then
             FCOIS.IIfAmouseOvered = {}
             FCOIS.IIfAmouseOvered.itemLink = itemLink
             FCOIS.IIfAmouseOvered.itemInstanceOrUniqueId = itemInstanceOrUniqueIdIIfA
         end
     end
+]]
     if bagId ~= nil and slotIndex ~= nil then
-        return bagId, slotIndex, moc, controlTypeBelowMouse
+        return bagId, slotIndex, mouseOverControl, controlTypeBelowMouse
     else
-        return false, nil, moc, controlTypeBelowMouse
+        return false, nil, mouseOverControl, controlTypeBelowMouse
     end
 end
 

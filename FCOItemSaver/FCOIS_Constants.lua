@@ -263,6 +263,22 @@ FCOIS_DEBUG_DEPTH_VERY_DETAILED	= 3
 FCOIS_DEBUG_DEPTH_SPAM		    = 4
 FCOIS_DEBUG_DEPTH_ALL			= 5
 
+--The inventory row patterns for the supported keybindings and MouseOverControl checks (SHIFT+right mouse functions e.g.)
+--See file src/FCOIS_Functions.lua, function FCOIS.GetBagAndSlotFromControlUnderMouse()
+FCOIS.checkVars.inventoryRowPatterns = {
+[1] = "^ZO_%a+Backpack%dRow%d%d*",                                          --Inventory backpack
+[2] = "^ZO_%a+InventoryList%dRow%d%d*",                                     --Inventory backpack
+[5] = "^ZO_CharacterEquipmentSlots.+$",                                     --Character
+[3] = "^ZO_CraftBagList%dRow%d%d*",                                         --CraftBag
+[5] = "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d*",             --Smithing refinement
+[6] = "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",      --Retrait
+[7] = "^ZO_QuickSlotList%dRow%d%d*",                                        --Quickslot
+[8] = "^ZO_RepairWindowList%dRow%d%d*",                                     --Repair at vendor
+--Other adons like IIfA will be added dynamically at EVENT_ON_ADDON_LOADED callback function
+--See file src/FCOIS_Events.lua, call to function FCOIS.checkIfOtherAddonActive() -> See file
+-- src/FCOIS_OtherAddons.lua, function FCOIS.checkIfOtherAddonActive()
+}
+
 --Array for the mapping between variables and values
 FCOIS.mappingVars = {}
 FCOIS.mappingVars.noEntry = "-------------"
