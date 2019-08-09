@@ -15,10 +15,26 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 12
+-- Current max bugs: 13
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
+
+-- 13) 2019-08-09 - Bugfix - Baertram
+-- If the same items are available at the crafting stations deconstruct panel (each item got it's own row for own bagId and slotIndex) and both are not protected.
+-- Slot one of the item in the deconstruction slot
+-- Add the marker icon to protect it to the other "sane" item. Due to the different bagId and slotIndex the item in the slot won't get protected and not removed!
+---> Need to scan the whole inventory list as an item get's marked at the deconstruction/improvement/retrait panel in order to remove all items which are protected from the
+---> slot!
+----> See file src/FCOIS_Protection.lua, function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
+-----> Should get another parameter "scanOtherInvItemsIfSlotted"
+
+-- 14) 2019-08-09 - Feature - Baertram
+-- Support left click addition of items/glyphs to the improvement/glyph extraction/retrait slots (multiple items can be added via left click on PTS).
+--> Protect ALL of the items and remove the ones who get protected again.
+--> Working as expected: Refine, deconstruction, improvement
+--> Todo:   Check refine
+-->         Fix enchanting extraction
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

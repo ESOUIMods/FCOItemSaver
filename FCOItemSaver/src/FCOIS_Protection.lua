@@ -980,8 +980,8 @@ function FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
     end
 end
 --Remove an item from a crafting extraction/refinement slot
-function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted)
-    --d("FCOIS.craftingPrevention.RemoveItemFromCraftSlot")
+function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted, scanOtherInvItemsIfSlotted)
+d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
     if bagId == nil or slotIndex == nil then return false end
     isSlotted = isSlotted or false
     --Get the "WhereAreWe" constant by the help of the active deconstruction/extraction crafting panel
@@ -1014,6 +1014,7 @@ function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSl
     if not isSlotted then
         isSlotted = craftingStationVar:IsItemAlreadySlottedToCraft(bagId, slotIndex)
     end
+d(">whereAreWe: " .. tostring(whereAreWe) .. ", isSlotted: " ..tostring(isSlotted) .. ", craftingStationVar: " .. tostring(craftingStationVar.control:GetName()))
     --Item is not slotted so abort here
     if not isSlotted then return false end
     --Unequip the item from the crafting slot again
@@ -1086,7 +1087,7 @@ function FCOIS.craftingPrevention.CheckPreventCrafting(override, extractSlot, ex
 end
 
 --Remove an item from the retrait slot
-function FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, isSlotted)
+function FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, isSlotted, scanOtherInvItemsIfSlotted)
     --d("[FCOIS.craftingPrevention.RemoveItemFromRetraitSlot] isSlotted: " ..tostring(isSlotted))
     if bagId == nil or slotIndex == nil then return false end
     isSlotted = isSlotted or false
@@ -1112,10 +1113,13 @@ function FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, is
 end
 
 --Returns the bagId and slotIndex of a slotted item in the deconstruction/improvement/refine/enchant extraction slot
+--With ESO update Scalebreaker the multi-craft and deconstruct/extract is supported by the game. You are able to add multiple items with a
+--left mouse click to the slot and the items added are then in the subtable "items" of the deconstruction/extraction slot.
+--This function checks if there are multiple items and returns the table of slotted items now as 3rd return parameter
 function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
     local isRetraitShown = FCOIS.isRetraitStationShown()
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
-    local bagId, slotIndex
+    local bagId, slotIndex, slottedItems
     local craftingStationSlot
         --Crafting station shown?
     if isCraftingStationShown then
@@ -1142,37 +1146,59 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
     end
     --Is the crafting slot found, get the bagId and slotIndex of the slotted item now
     if craftingStationSlot ~= nil then
-        bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
+        if craftingStationSlot.GetBagAndSlot then
+            bagId, slotIndex = craftingStationSlot:GetBagAndSlot()
+        end
+        slottedItems = craftingStationSlot.items
     end
-    return bagId, slotIndex
+    return bagId, slotIndex, slottedItems
 end
 
 --Is the item protected at a crafting table's slot now
-function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
+function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
+    scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
+local itemLink = GetItemLink(bagId, slotIndex)
+d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
     --Are we inside a crafting or retrait station?
     local isRetraitShown = FCOIS.isRetraitStationShown()
+    local slottedItems
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
+d(">isCraftingStationShown: " .. tostring(isCraftingStationShown) .. ", isRetraitShown: " ..tostring(isRetraitShown) .. ", filterPanelId: " ..tostring(FCOIS.gFilterWhere))
     if isCraftingStationShown or isRetraitShown then
+        local allowedCraftingPanelIdsForMarkerRechecks = FCOIS.checkVars.allowedCraftingPanelIdsForMarkerRechecks
         --Check if a refine/deconstruct/create glyph/extract/improve/create alchemy panel is shown
-        if FCOIS.checkVars.allowedCraftingPanelIdsForMarkerRechecks[FCOIS.gFilterWhere] then
+        if allowedCraftingPanelIdsForMarkerRechecks[FCOIS.gFilterWhere] then
             --Is the bagId and slotIndex nil then get the slotted item's bagId and slotIndex now
             if bagId == nil and slotIndex == nil then
-                bagId, slotIndex = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
+                bagId, slotIndex, slottedItems = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
             end
-            --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
-            --d("[FCOIS]MarkMe - callDeconstructionSelectionHandler without echo -> Crafting/Retrait station")
-            --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
-            local isProtected = FCOIS.callDeconstructionSelectionHandler(bagId, slotIndex, false, false, true, false, true, false)
-            --d(">isProtected: " ..tostring(isProtected))
-            --Item is protected?
-            if isProtected then
-                if isRetraitShown then
-                    --d("Item is protected! Remove it from the retrait slot and output error message now")
-                    FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, false)
-                else
-                    --d("Item is protected! Remove it from the crafting slot and output error message now")
-                    FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, false)
+            --local helper function to check the protection and remove the item from the craft slot
+            local function checkProtectionAndRemoveFromSlotIfProtected(p_bagId, p_slotIndex)
+                --Check if the item is currently slotted at a crafting station's extraction slot. If the item is proteced remove it from the extraction slot again!
+                --FCOIS.callDeconstructionSelectionHandler(bag, slot, echo, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon)
+                local isProtected = FCOIS.callDeconstructionSelectionHandler(p_bagId, p_slotIndex, false, false, true, false, true, false)
+            d(">isProtected: " ..tostring(isProtected))
+                --Item is protected?
+                if isProtected then
+                    if isRetraitShown then
+                        --d("Item is protected! Remove it from the retrait slot and output error message now")
+                        FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
+                    else
+                        --d("Item is protected! Remove it from the crafting slot and output error message now")
+                        FCOIS.craftingPrevention.RemoveItemFromCraftSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
+                    end
                 end
+            end
+            --Table with all slotted items is given?
+            if (bagId == nil or slotIndex == nil) and slottedItems ~= nil then
+                --For each table entry check if the item is protected and remove where needed
+                for index, slottedData in ipairs(slottedItems) do
+                    if slottedData.bagId and slottedData.slotIndex then
+                        checkProtectionAndRemoveFromSlotIfProtected(slottedData.bagId , slottedData.slotIndex)
+                    end
+                end
+            elseif bagId ~= nil and slotIndex ~= nil then
+                checkProtectionAndRemoveFromSlotIfProtected(bagId, slotIndex)
             end
         end
     end
@@ -1219,7 +1245,8 @@ end
 
 --Function to check if an item is protected at the guild store sell tab now, after it got marked with a marker icon.
 --If so: Remove the item from the guild store's sell slot again, if it is slotted
-function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
+function FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
+    scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     if not ctrlVars.GUILD_STORE:IsHidden() and ctrlVars.GUILD_STORE_KEYBOARD:IsInSellMode() then
         --Check if marked item is currently in the "sell slot" and remove it again, if it is protected
         if (ctrlVars.GUILD_STORE_SELL_SLOT_ITEM ~= nil and (ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.bagId ~= nil and ctrlVars.GUILD_STORE_SELL_SLOT_ITEM.slotIndex ~= nil)
@@ -1248,7 +1275,8 @@ end
 
 --Function to check if an item is protected at a libFilters filter panel ID now, after it got marked with a marker icon.
 --If so: Remove the item from the panel's slot again, if it is slotted
-function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId)
+function FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, panelId, scanOtherInvItemsIfSlotted)
+    scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     panelId = panelId or FCOIS.gFilterWhere
     if panelId == nil then return nil end
     --Mail send
@@ -1326,7 +1354,8 @@ end
 --> Only remove from bulk
 ---- if setting to not remove normal (keybind/context menu) marked items from junk is disabled
 ---- if setting to not remove bulk (additional inventory "flag" icon) marked items from junk is disabled
-function FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
+function FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark, scanOtherInvItemsIfSlotted)
+    scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     if bagId == nil or slotIndex == nil then return false end
     bulkMark = bulkMark or false
     if IsItemJunk(bagId, slotIndex) and FCOIS.IsJunkLocked(bagId, slotIndex) then
@@ -1347,16 +1376,17 @@ end
 --Function to check if an item is protected at a slot (crafting, junk, mail, trade, etc.) at the moment, and if so,
 --remove it from the slot/junk now.
 --Parameter bulkMark is used for the junk checks, if the additional inventory "flag" icon context menu is used for mass-junk/unjunk
-function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
+function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark, scanOtherInvItemsIfSlotted)
     bulkMark = bulkMark or false
+    scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
     --Check if the item was marked and then needs to be protected, if it's slotted at a crafting/retrait station!
-    IsItemProtectedAtACraftSlotNow(bagId, slotIndex)
+    IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
     --Are we inside the guild store's sell tab?
-    FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex)
+    FCOIS.IsItemProtectedAtTheGuildStoreSellTabNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
     --Check if the item is protected at the junk tab now
-    FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark)
+    FCOIS.checkIfIsJunkItem(bagId, slotIndex, bulkMark, scanOtherInvItemsIfSlotted)
     --Check if the item is protected at any other panel now
-    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere)
+    FCOIS.IsItemProtectedAtPanelNow(bagId, slotIndex, FCOIS.gFilterWhere, scanOtherInvItemsIfSlotted)
 end
 
 --Check if withdraw from guild bank is allowed, or block deposit of items

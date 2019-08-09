@@ -129,6 +129,7 @@ ZO_PreHook("ZO_Menu_OnHide", function()
 end)
 
 --Show tooltips in ZO_Menu items
+--[[
 ZO_PreHook("ZO_Menu_SetSelectedIndex", function(index)
     if(not index or not ZO_Menu.items) then return end
     --Hide old text tooltips
@@ -174,11 +175,14 @@ ZO_PreHook("ZO_Menu_SetSelectedIndex", function(index)
         end
     end
 end)
+]]
 
 --ZO_Menu item mouse exit -> Hide tooltip e.g.
+--[[
 ZO_PreHook("ZO_Menu_ExitItem", function()
     ZO_Tooltips_HideTextTooltip()
 end)
+]]
 
 function FCOIS.useAddSlotActionCallbackFunc(self)
     --d("[FCOIS.useAddSlotActionCallbackFunc]")
@@ -591,99 +595,99 @@ function FCOIS.CreateHooks()
 
         --Call a little bit later so the context menu is already created
         --zo_callLater(function()
-            --Reset the IIfA clicked variables
-            FCOIS.IIfAclicked = nil
+        --Reset the IIfA clicked variables
+        FCOIS.IIfAclicked = nil
 
-            local parentControl = rowControl:GetParent()
+        local parentControl = rowControl:GetParent()
 
-            local FCOcontextMenu = {}
+        local FCOcontextMenu = {}
 
-            --Check if the user set ordering is valid, else use the default sorting
-            local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
-            local resetSortOrderDone = false
+        --Check if the user set ordering is valid, else use the default sorting
+        local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
+        local resetSortOrderDone = false
 
-            local contextMenuEntriesAdded = 0
-            --check each iconId and build a sorted context menu then
-            local useSubContextMenu     = settings.useSubContextMenu
-            local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
-            local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-            for iconId = 1, numFilterIcons, 1 do
-                --Check if the icon (including gear sets) is enabled
-                if settings.isIconEnabled[iconId] then
-                    --Re-order the context menu entries by defaults, or with user settings
-                    local newOrderId = 0
-                    if userOrderValid then
-                        --Use the custom sort order as it is valid!
-                        newOrderId = settings.icon[iconId].sortOrder
+        local contextMenuEntriesAdded = 0
+        --check each iconId and build a sorted context menu then
+        local useSubContextMenu     = settings.useSubContextMenu
+        local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
+        local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
+        for iconId = 1, numFilterIcons, 1 do
+            --Check if the icon (including gear sets) is enabled
+            if settings.isIconEnabled[iconId] then
+                --Re-order the context menu entries by defaults, or with user settings
+                local newOrderId = 0
+                if userOrderValid then
+                    --Use the custom sort order as it is valid!
+                    newOrderId = settings.icon[iconId].sortOrder
+                else
+                    --Reset the sort order to the default values now - Only once for the first icon where this happens
+                    if not resetSortOrderDone then
+                        resetSortOrderDone = FCOIS.resetUserContextMenuSortOrder()
+                    end
+                    --Use the default sort order as the other one is not valid!
+                    newOrderId = FCOIS.settingsVars.defaults.icon[iconId].sortOrder
+                end
+                if newOrderId > 0 and newOrderId <= numFilterIcons then
+                    --Initialize the context menu entry at the new index
+                    FCOcontextMenu[newOrderId] = nil
+                    FCOcontextMenu[newOrderId] = {}
+                    --Is the current control an equipment control?
+                    local isEquipControl = (parentControl == ctrlVars.CHARACTER)
+                    if(isEquipControl) then
+                        FCOcontextMenu[newOrderId].control		= rowControl
                     else
-                        --Reset the sort order to the default values now - Only once for the first icon where this happens
-                        if not resetSortOrderDone then
-                            resetSortOrderDone = FCOIS.resetUserContextMenuSortOrder()
-                        end
-                        --Use the default sort order as the other one is not valid!
-                        newOrderId = FCOIS.settingsVars.defaults.icon[iconId].sortOrder
+                        FCOcontextMenu[newOrderId].control		= parentControl
                     end
-                    if newOrderId > 0 and newOrderId <= numFilterIcons then
-                        --Initialize the context menu entry at the new index
-                        FCOcontextMenu[newOrderId] = nil
-                        FCOcontextMenu[newOrderId] = {}
-                        --Is the current control an equipment control?
-                        local isEquipControl = (parentControl == ctrlVars.CHARACTER)
-                        if(isEquipControl) then
-                            FCOcontextMenu[newOrderId].control		= rowControl
-                        else
-                            FCOcontextMenu[newOrderId].control		= parentControl
-                        end
-                        FCOcontextMenu[newOrderId].iconId		= iconId
-                        FCOcontextMenu[newOrderId].refreshPopup	= false
-                        FCOcontextMenu[newOrderId].isEquip		= isEquipControl
-                        FCOcontextMenu[newOrderId].useSubMenu	= useSubContextMenu
-                        --Increase the counter for added context menu entries
-                        contextMenuEntriesAdded = contextMenuEntriesAdded + 1
-                    end -- if newOrderId > 0 and newOrderId <= numFilterIcons then
-                end -- if settings.isIconEnabled[iconId] then
-            end -- for
+                    FCOcontextMenu[newOrderId].iconId		= iconId
+                    FCOcontextMenu[newOrderId].refreshPopup	= false
+                    FCOcontextMenu[newOrderId].isEquip		= isEquipControl
+                    FCOcontextMenu[newOrderId].useSubMenu	= useSubContextMenu
+                    --Increase the counter for added context menu entries
+                    contextMenuEntriesAdded = contextMenuEntriesAdded + 1
+                end -- if newOrderId > 0 and newOrderId <= numFilterIcons then
+            end -- if settings.isIconEnabled[iconId] then
+        end -- for
 
-            --Are there any context menu entries?
-            if contextMenuEntriesAdded > 0 then
-                local addedCounter = 0
-                FCOIS.preventerVars.buildingInvContextMenuEntries = true
-                for j = 1, numFilterIcons, 1 do
-                    if FCOcontextMenu[j] ~= nil then
-                        addedCounter = addedCounter + 1
-                        --Is the currently added entry with AddMark the "last one in this context menu"?
-                        --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
-                        if addedCounter == contextMenuEntriesAdded then
-                            --Last entry in custom context menu reached
-                            FCOIS.preventerVars.buildingInvContextMenuEntries = false
-                        end
-                        --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
-                        --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
-                        FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
-                        FCOIS.AddMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
+        --Are there any context menu entries?
+        if contextMenuEntriesAdded > 0 then
+            local addedCounter = 0
+            FCOIS.preventerVars.buildingInvContextMenuEntries = true
+            for j = 1, numFilterIcons, 1 do
+                if FCOcontextMenu[j] ~= nil then
+                    addedCounter = addedCounter + 1
+                    --Is the currently added entry with AddMark the "last one in this context menu"?
+                    --> Needed to set the preventer variable buildingInvContextMenuEntries for the function AddMark so the IIfA addon is recognized properly!
+                    if addedCounter == contextMenuEntriesAdded then
+                        --Last entry in custom context menu reached
+                        FCOIS.preventerVars.buildingInvContextMenuEntries = false
                     end
+                    --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
+                    --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
+                    FCOIS.customMenuVars.customMenuCurrentCounter = FCOIS.customMenuVars.customMenuCurrentCounter + 1
+                    FCOIS.AddMark(FCOcontextMenu[j].control, FCOcontextMenu[j].iconId, FCOcontextMenu[j].isEquip, FCOcontextMenu[j].refreshPopup, FCOcontextMenu[j].useSubMenu)
                 end
+            end
 
-                --As the (dynamic) sub menu entries were build, show them now
-                if useSubContextMenu or useDynSubContextMenu then
-                    zo_callLater(function()
-                        --ClearMenu()
-                        if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
-                            AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
-                        else
-                            if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
-                                local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
-                                if settings.addContextMenuLeadingMarkerIcon then
-                                    dynamicSubMenuEntryHeaderText = "  " .. dynamicSubMenuEntryHeaderText
-                                end
-                                AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
+            --As the (dynamic) sub menu entries were build, show them now
+            if useSubContextMenu or useDynSubContextMenu then
+                zo_callLater(function()
+                    --ClearMenu()
+                    if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
+                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
+                    else
+                        if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
+                            local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
+                            if settings.addContextMenuLeadingMarkerIcon then
+                                dynamicSubMenuEntryHeaderText = "  " .. dynamicSubMenuEntryHeaderText
                             end
+                            AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
                         end
-                        ShowMenu()
-                    end, 30)
-                end
-            end -- if contextMenuEntriesAdded > 0 then
-            FCOIS.preventerVars.buildingInvContextMenuEntries = false
+                    end
+                    ShowMenu()
+                end, 30)
+            end
+        end -- if contextMenuEntriesAdded > 0 then
+        FCOIS.preventerVars.buildingInvContextMenuEntries = false
         --end, 30) -- zo_callLater
     end
 
@@ -912,7 +916,7 @@ function FCOIS.CreateHooks()
     local researchPopupDialogCustomControl = ESO_Dialogs["SMITHING_RESEARCH_SELECT"].customControl()
     if researchPopupDialogCustomControl ~= nil then
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnShow", function()
---d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
+            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnShow")
             --As this OnShow function will be also called for other ZO_ListDialog1 dialogs...
             --Check if we are at the research popup dialog
             if not FCOIS.isResearchListDialogShown() then return false end
@@ -921,7 +925,7 @@ function FCOIS.CreateHooks()
             FCOIS.CheckFilterButtonsAtPanel(true, LF_SMITHING_RESEARCH_DIALOG)
         end)
         ZO_PreHookHandler(researchPopupDialogCustomControl, "OnHide", function()
---d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
+            --d("[FCOIS]SMITHING_RESEARCH_SELECT PreHook:OnHide")
             --Check if we are at the research popup dialog
             if not FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen then return false end
             FCOIS.preventerVars.ZO_ListDialog1ResearchIsOpen = false
@@ -1324,19 +1328,17 @@ function FCOIS.CreateHooks()
     end
 
     --======== ENCHANTING ==========================================================
-    --Prehook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
-    local origEnchantingSetEnchantMode = ZO_Enchanting.SetEnchantingMode
-    ZO_Enchanting.SetEnchantingMode = function(enchantingCtrl, enchantingMode, ...)
-        local retVar = origEnchantingSetEnchantMode(enchantingCtrl, enchantingMode, ...)
-
+    local function enchantingPostHook(enchantingMode)
         --Hide the context menu at last active panel
         FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-        if settings.debug then FCOIS.debugMessage( "[ENCHANTING:SetEnchantingMode] EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+        if settings.debug then FCOIS.debugMessage( "[ENCHANTING:SetEnchantingMode/OnModeUpdated] EnchantingMode: " .. tostring(enchantingMode), true, FCOIS_DEBUG_DEPTH_NORMAL) end
         --[[ enchantingMode could be:
             ENCHANTING_MODE_CREATION
             ENCHANTING_MODE_EXTRACTION
         ]]
+
+        --d("[FCOIS]Hook ZO_Enchanting.SetEnchantingMode/OnModeUpdated - Mode: " ..tostring(enchantingMode))
         --Creation
         if     enchantingMode == ENCHANTING_MODE_CREATION then
             FCOIS.PreHookButtonHandler(LF_ENCHANTING_EXTRACTION, LF_ENCHANTING_CREATION)
@@ -1347,7 +1349,25 @@ function FCOIS.CreateHooks()
             --zo_callLater(function() FCOItemSaver_OnEffectivelyShown(ctrlVars.ENCHANTING_STATION_BAG) end, 100)
         end
         --Go on with original function
-        return retVar
+    end
+
+    --Posthook the enchanting function SetEnchantingMode() which gets executed as the enchanting tabs are changed
+    local origEnchantingSetEnchantMode = ZO_Enchanting.SetEnchantingMode
+    if origEnchantingSetEnchantMode ~= nil then
+        ZO_Enchanting.SetEnchantingMode = function(enchantingCtrl, enchantingMode, ...)
+            local retVar = origEnchantingSetEnchantMode(enchantingCtrl, enchantingMode, ...)
+            enchantingPostHook(enchantingMode)
+            return retVar
+        end
+    else
+        --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
+        origEnchantingSetEnchantMode = ZO_Enchanting.OnModeUpdated
+        ZO_Enchanting.OnModeUpdated = function(...)
+            local retVar = origEnchantingSetEnchantMode(...)
+            local enchantingMode = ctrlVars.ENCHANTING.enchantingMode
+            enchantingPostHook(enchantingMode)
+            return retVar
+        end
     end
 
     --======== ALCHEMY =============================================================

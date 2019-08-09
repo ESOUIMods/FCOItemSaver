@@ -310,7 +310,7 @@ end
 function FCOIS.buildMarkerIconProtectedWhereTooltip(markId, markIdState)
     local locVars = FCOIS.localizationVars
     local locVarsFCO = locVars.fcois_loc
-    local protectedAtStr = "\n[" .. locVarsFCO["protection_at_panel"] .. "]"
+    local protectedAtStr = "[" .. locVarsFCO["protection_at_panel"] .. "]"
     local filterPanelNames = locVarsFCO["FCOIS_LibFilters_PanelIds"]
     local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
     local protectedColorPrefixes = FCOIS.protectedData.colors
@@ -322,7 +322,7 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId, markIdState)
             local filterPanelName = filterPanelNames[libFilterPanelId]
             if filterPanelName and filterPanelName ~= "" then
                 --Check the protection of the markerIcon there
-                local isProtected = false
+                local isProtected = FCOIS.checkIfProtectedSettingsEnabled(libFilterPanelId, markId)
                 local protectedColorPrefix = protectedColorPrefixes[isProtected]
                 local protectedTexture = protectedTextures[isProtected]
                 --Add the texture to the filterpanelName
