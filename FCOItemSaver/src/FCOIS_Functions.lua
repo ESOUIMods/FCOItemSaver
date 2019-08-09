@@ -347,12 +347,13 @@ end
 --And get the control hovered over, the controlType (e.g. Inventory, CraftBag, .. or other addon's UI like Inventory Insigh from Ashes row)
 -->Returns bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
 function FCOIS.GetBagAndSlotFromControlUnderMouse()
+--d("[FCOIS]GetBagAndSlotFromControlUnderMouse")
     --The control type below the mouse
     local controlTypeBelowMouse = false
     --Get the control below the mouse cursor
     local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
     if mouseOverControl == nil then return end
-    --d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
+--d("[FCOIS.GetBagAndSlotFromControlUnderMouse] " .. mouseOverControl:GetName())
     local bagId
     local slotIndex
     local itemLink

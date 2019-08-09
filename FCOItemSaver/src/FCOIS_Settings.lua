@@ -217,16 +217,16 @@ function FCOIS.changeAntiSettingsAccordingToFilterPanel()
         end
     --------------------------------------------------------------------------------------------------------------------
     elseif FCOIS.gFilterWhere == LF_VENDOR_BUY then
-        FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorBuy
+        FCOIS.settingsVars.settings.blockVendorBuy = not currentSettings.blockVendorBuy
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuy
     elseif FCOIS.gFilterWhere == LF_VENDOR_SELL then
         FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockSelling
         isSettingEnabled = FCOIS.settingsVars.settings.blockSelling
     elseif FCOIS.gFilterWhere == LF_VENDOR_BUYBACK then
-        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorBuyback
+        FCOIS.settingsVars.settings.blockVendorBuyback = not currentSettings.blockVendorBuyback
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorBuyback
     elseif FCOIS.gFilterWhere == LF_VENDOR_REPAIR then
-        FCOIS.settingsVars.settings.blockSelling = not currentSettings.blockVendorRepair
+        FCOIS.settingsVars.settings.blockVendorRepair = not currentSettings.blockVendorRepair
         isSettingEnabled = FCOIS.settingsVars.settings.blockVendorRepair
     elseif FCOIS.gFilterWhere == LF_FENCE_SELL then
         FCOIS.settingsVars.settings.blockFence = not currentSettings.blockFence
@@ -681,6 +681,12 @@ function FCOIS.afterSettings()
             end
         end -- for filterbuttonsToCheck ...
     end
+
+    --Since FCOS version 1.6.0
+    --Resetting the vendorBuyBack and vendorRepair protection to false as there is no setting to change this yet in the settings menu
+    FCOIS.settingsVars.settings.blockVendorBuy      = false
+    FCOIS.settingsVars.settings.blockVendorBuyback  = false
+    FCOIS.settingsVars.settings.blockVendorRepair   = false
 end
 
 --Do some updates to the SavedVariables before the addon menu is created

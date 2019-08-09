@@ -15,7 +15,7 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 16
+-- Current max bugs: 17
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
@@ -29,10 +29,9 @@
 ----> See file src/FCOIS_Protection.lua, function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
 -----> Should get another parameter "scanOtherInvItemsIfSlotted"
 
--- 15) 2019-08-09 - Bugfix - Baertram
--- Keybindings and shift+right mouse do not work at refine panel at crafting stations, and retrait panel
---> Refine panel inventory row names got this pattern: ZO_SmithingTopLevelRefinementPanelInventoryBackpack1Row7
---> Check if this is properly supported at file FCOIS_Constants.lua, table FCOIS.checkVars.inventoryRowPatterns
+-- 17) 2019-08-09 - Bugfix - Baertram
+-- Drag&drop -> Destroy works at Vendor repair panel for marked  & protected items!
+
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

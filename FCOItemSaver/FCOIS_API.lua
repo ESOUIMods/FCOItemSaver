@@ -572,7 +572,8 @@ function FCOIS.MarkItem(bag, slot, iconId, showIcon, updateInventories)
 				if isCharShown then
 					FCOIS.RefreshEquipmentControl(nil, showIcon, iconId)
 				elseif bag == BAG_BACKPACK or bag == BAG_VIRTUAL
-					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag) then
+					or bag == BAG_BANK or bag == BAG_SUBSCRIBER_BANK or bag == BAG_GUILDBANK or IsHouseBankBag(bag)
+					or (bag == BAG_WORN and FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false)) then
 					FCOIS.FilterBasics(false)
 				end
 			end -- if updateInventories ...
@@ -1280,6 +1281,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 	if not isIconEnabled[iconId] then return false end
 	local isIIfAControlChanged = false
 	local bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse
+--d("[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex))
 	if p_bagId == nil or p_slotIndex == nil then
 		bagId, slotIndex, controlBelowMouse, controlTypeBelowMouse  = FCOIS.GetBagAndSlotFromControlUnderMouse()
 		--No valid bagId and slotIndex was found
@@ -1292,7 +1294,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
 	end
     --bag and slot could be retrieved?
     if bagId ~= nil and slotIndex ~= nil then
-        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. bagId .. ", slot: " .. slotIndex, true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
+        if settings.debug then FCOIS.debugMessage( "[FCOIS.MarkItemByKeybind] Bag: " .. tostring(bagId) .. ", slot: " .. tostring(slotIndex), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
 		local mappingVars = FCOIS.mappingVars
         --Check if the item is currently marked with this icon, or not
         --Get the itemId of the bag, slot combination

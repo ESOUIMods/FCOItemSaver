@@ -274,33 +274,20 @@ end
 --==============================================================================
 
 -- handler function for character window item controls' OnMouseDoubleClick event
-local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, ...)
+local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, button, ctrl, alt, shift, command)
+--d("[FCOIS]CharacterItem_OnMouseDoubleClick] mouseButton: " .. tostring(button) .. ", ctrlKey: " .. tostring(ctrl) .. ", altKey: " .. tostring(alt).. ", shiftKey: " .. tostring(shift))
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
     --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
     -->Then do not call the double click handler here
-    if IsShiftKeyDown() then return false end
-
-    --local bagId, slotId = FCOIS.MyGetItemDetails(self)
-    -- make sure control contains an item
-    --[[
-    if( self.dataEntry and self.dataEntry.data ) then
-        bagId = self.dataEntry.data.bagId
-        slotId = self.dataEntry.data.slotIndex
-    else
-        if( self.slotIndex and self.bagId ) then
-            bagId  = self.bagId
-            slotId = self.slotIndex
-        end
-    end
-    ]]
+    if shift and button == MOUSE_BUTTON_INDEX_RIGHT then return false end
 
     -- call the original handler function
     local func = GetEventHandler("OnMouseDoubleClick", self:GetName())
     if ( not func ) then return false end
 
-    return func(self, ...)
+    return func(self, button, ctrl, alt, shift, command)
 end
 
 -- handler function for inventory item controls' OnMouseUp event
@@ -314,28 +301,16 @@ local function FCOItemSaver_InventoryItem_OnMouseUp(self, mouseButton, upInside,
 end
 
 -- handler function for inventory item controls' OnMouseDoubleClick event
-local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
+local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, button, ctrl, alt, shift, command)
 --d("[FCOIS]InventoryItem_OnMouseDoubleClick]")
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
     --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
     -->Then do not call the double click handler here
-    if IsShiftKeyDown() then return false end
+    if shift and button == MOUSE_BUTTON_INDEX_RIGHT then return false end
 
     local bagId, slotId = FCOIS.MyGetItemDetails(self)
-    -- make sure control contains an item
-    --[[
-    if( self.dataEntry and self.dataEntry.data ) then
-        bagId = self.dataEntry.data.bagId
-        slotId = self.dataEntry.data.slotIndex
-    else
-        if( self.slotIndex and self.bagId ) then
-            bagId  = self.bagId
-            slotId = self.slotIndex
-        end
-    end
-    ]]
 
     if( bagId ~= nil and slotId ~= nil ) then
         --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -367,7 +342,7 @@ local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
     local func = GetEventHandler("OnMouseDoubleClick", self:GetName())
     if ( not func ) then return false end
 
-    return func(self, ...)
+    return func(self, button, ctrl, alt, shift, command)
 end
 
 -- handler function for character equipment double click -> OnEffectivelyShown function
@@ -418,13 +393,14 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
     FCOIS.checkMarker(-1)
     if ( not self ) then return false end
     local isABankWithdraw = (self == ctrlVars.BANK_BAG or self == ctrlVars.GUILD_BANK_BAG or self == ctrlVars.HOUSE_BANK_BAG)
---d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName() .. ", isABankWithdraw: " .. tostring(isABankWithdraw))
     local contextMenuClearMarkesByShiftKey = FCOIS.settingsVars.settings.contextMenuClearMarkesByShiftKey
     local isCharacter = (self == ctrlVars.CHARACTER) or false
+    local isVendorRepair = FCOIS.IsVendorPanelShown(LF_VENDOR_REPAIR, false) or false
+--d("[FCOItemSaver_OnEffectivelyShown]: " .. self:GetName() .. ", isABankWithdraw: " .. tostring(isABankWithdraw) .. ", isCharacter: " .. tostring(isCharacter) .. ", isVendorRepair: " .. tostring(isVendorRepair))
     for i = 1, self:GetNumChildren() do
         local childrenCtrl = self:GetChild(i)
-        --Do not add protection double click functions to bank/guild bank withdraw and character!
-        if not isABankWithdraw and not isCharacter then
+        --Do not add protection double click functions to bank/guild bank withdraw and character, and vendor repair
+        if not isABankWithdraw and not isCharacter and not isVendorRepair then
             -- Append OnMouseDoubleClick event of inventory item controls, for each row (children)
             if( childrenCtrl:GetHandler("OnMouseDoubleClick") ~= FCOItemSaver_InventoryItem_OnMouseDoubleClick ) then
                 PreHookHandler( "OnMouseDoubleClick", childrenCtrl, FCOItemSaver_InventoryItem_OnMouseDoubleClick)
@@ -454,21 +430,16 @@ local function FCOItemSaver_OnEffectivelyShown(self, ...)
 end
 
 --Callback function for start a new drag&drop operation
+--After the item was picked from the inventory the event EVENT_INVENTORY_SLOT_LOCKED will be called, as the item get's locked against changes
+--Check file src/FCOIS_Events.lua, function FCOItemSaver_OnInventorySlotLocked() for the further checks of a dragged item -> Protections
 local function FCOItemSaver_OnDragStart(inventorySlot)
     if inventorySlot == nil then return end
     --local cursorContentType = GetCursorContentType()
-    --d("[OnDragStart] cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM))
+--d("[FCOIS]FCOItemSaver_OnDragStart-cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM))
+    --cursorContentType is in 99% of the cases = MOUSE_CONTENT_EMPTY, even if an inventory item gets dragged
     --if(cursorContentType == MOUSE_CONTENT_EMPTY) then return end
 
-    local bag
-    local slot
-    if inventorySlot.dataEntry ~= nil and inventorySlot.dataEntry.data ~= nil then
-        bag		= inventorySlot.dataEntry.data.bagId
-        slot	= inventorySlot.dataEntry.data.slotIndex
-    elseif inventorySlot.bagId ~= nil and inventorySlot.slotIndex ~= nil then
-        bag		= inventorySlot.bagId
-        slot	= inventorySlot.slotIndex
-    end
+    local bag, slot = FCOIS.MyGetItemDetails(inventorySlot)
     FCOIS.dragAndDropVars.bag = nil
     FCOIS.dragAndDropVars.slot = nil
     if bag == nil or slot == nil then return end
@@ -481,6 +452,7 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     --FCOinvs = inventorySlot
     local cursorContentType = GetCursorContentType()
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[OnReceiveDrag] cursorContentType: " .. tostring(cursorContentType) .. "/" .. tostring(MOUSE_CONTENT_INVENTORY_ITEM) .. ", invSlotType: " .. tostring(inventorySlot.slotType) .. "/" .. tostring(SLOT_TYPE_EQUIPMENT), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[FCOIS]FCOItemSaver_OnReceiveDrag, cursorContentType: " ..tostring(cursorContentType))
 
     -- if there is an inventory item on the cursor:
     if cursorContentType ~= MOUSE_CONTENT_INVENTORY_ITEM and cursorContentType ~= MOUSE_CONTENT_EQUIPPED_ITEM then return end
@@ -489,10 +461,11 @@ local function FCOItemSaver_OnReceiveDrag(inventorySlot)
     if inventorySlot.slotType == SLOT_TYPE_EQUIPMENT then
         local bag
         local slot
+        local dragAndDropVars = FCOIS.dragAndDropVars
         --Was the drag started with another item then the dropped item slot?
-        if FCOIS.dragAndDropVars.bag ~= nil and FCOIS.dragAndDropVars.slot ~= nil then
-            bag			= FCOIS.dragAndDropVars.bag
-            slot		= FCOIS.dragAndDropVars.slot
+        if dragAndDropVars.bag ~= nil and dragAndDropVars.slot ~= nil then
+            bag			= dragAndDropVars.bag
+            slot		= dragAndDropVars.slot
             --receiveSlot = inventorySlot.slotIndex
         else
             --get bagid and SlotIndex from receiving inventorySlot -> Makes no sense as the bind dialog shows the wrong item then!
@@ -1236,6 +1209,8 @@ function FCOIS.CreateHooks()
     --Pre Hook the menubar button's (buy, sell, buyback, repair) handler at the vendor
     --> Will be done in event callback function for EVENT_OPEN_STORE + a delay as the buttons are not created before!
     ---> See file src/FCOIS_events.lua, function 'FCOItemSaver_OpenStore("vendor")'
+    --Pre Hook the improvement for prevention methods
+    PreHookHandler( "OnEffectivelyShown", ctrlVars.REPAIR_LIST_BAG, FCOItemSaver_OnEffectivelyShown )
 
     --======== BANK ================================================================
     --Pre Hook the bank withdraw panel for mouse right click function SHIFT + RMB

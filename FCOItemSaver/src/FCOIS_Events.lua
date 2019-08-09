@@ -608,8 +608,11 @@ end
 
 -- handler function for EVENT_INVENTORY_SLOT_LOCKED global event
 -- will be fired (before EVENT_CURSOR_PICKUP) if you pickup an item (e.g. by drag&drop)
+--> First function called if you drag an item from the inventories:
+----> Check file src/FCOIS_Hooks.lua, function FCOItemSaver_OnDragStart(...)
 local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[Event] OnInventorySlotLocked: bag: " .. tostring(bag) .. ", slot: " .. tostring(slot), true, FCOIS_DEBUG_DEPTH_NORMAL) end
+--d("[FCOIS]EVENT_INVENTORY_SLOT_LOCKED")
 
     FCOIS.preventerVars.gItemSlotIsLocked = true
     --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -635,7 +638,7 @@ local function FCOItemSaver_OnInventorySlotLocked(self, bag, slot)
     --Picked up an item at another station, for bind, destroy, refine, improve, etc.?
     else
         local doShowItemBindDialog = false -- Always false since API 100019 where ZOs included it's "ask before bind to account" dialog
-        -- check if destroying, improvement, sending or trading is forbidden
+        -- check if destroying, improvement, sending or trading, etc. is forbidden
         -- and check if item is bindable (above)
         -- if so, clear item hold by cursor
         --  bag, slot, echo, isDragAndDrop, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert, calledFromExternalAddon, panelId
