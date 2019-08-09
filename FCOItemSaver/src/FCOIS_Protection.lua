@@ -981,7 +981,7 @@ function FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
 end
 --Remove an item from a crafting extraction/refinement slot
 function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted, scanOtherInvItemsIfSlotted)
-d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
+--d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
     if bagId == nil or slotIndex == nil then return false end
     isSlotted = isSlotted or false
     --Get the "WhereAreWe" constant by the help of the active deconstruction/extraction crafting panel
@@ -1014,7 +1014,7 @@ d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
     if not isSlotted then
         isSlotted = craftingStationVar:IsItemAlreadySlottedToCraft(bagId, slotIndex)
     end
-d(">whereAreWe: " .. tostring(whereAreWe) .. ", isSlotted: " ..tostring(isSlotted) .. ", craftingStationVar: " .. tostring(craftingStationVar.control:GetName()))
+--d(">whereAreWe: " .. tostring(whereAreWe) .. ", isSlotted: " ..tostring(isSlotted) .. ", craftingStationVar: " .. tostring(craftingStationVar.control:GetName()))
     --Item is not slotted so abort here
     if not isSlotted then return false end
     --Unequip the item from the crafting slot again
@@ -1158,12 +1158,12 @@ end
 function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
     scanOtherInvItemsIfSlotted = scanOtherInvItemsIfSlotted or false
 local itemLink = GetItemLink(bagId, slotIndex)
-d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
+--d("[FCOIS]craftingPrevention.IsItemProtectedAtACraftSlotNow: " ..itemLink)
     --Are we inside a crafting or retrait station?
     local isRetraitShown = FCOIS.isRetraitStationShown()
     local slottedItems
     local isCraftingStationShown = ZO_CraftingUtils_IsCraftingWindowOpen() and ctrlVars.RESEARCH:IsHidden() -- No crafting slot at research!
-d(">isCraftingStationShown: " .. tostring(isCraftingStationShown) .. ", isRetraitShown: " ..tostring(isRetraitShown) .. ", filterPanelId: " ..tostring(FCOIS.gFilterWhere))
+--d(">isCraftingStationShown: " .. tostring(isCraftingStationShown) .. ", isRetraitShown: " ..tostring(isRetraitShown) .. ", filterPanelId: " ..tostring(FCOIS.gFilterWhere))
     if isCraftingStationShown or isRetraitShown then
         local allowedCraftingPanelIdsForMarkerRechecks = FCOIS.checkVars.allowedCraftingPanelIdsForMarkerRechecks
         --Check if a refine/deconstruct/create glyph/extract/improve/create alchemy panel is shown
