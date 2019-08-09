@@ -15,7 +15,7 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 15
+-- Current max bugs: 16
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
@@ -30,10 +30,9 @@
 -----> Should get another parameter "scanOtherInvItemsIfSlotted"
 
 -- 15) 2019-08-09 - Bugfix - Baertram
--- Keybindings and shift+right mouse do not work at refine panel at crafting stations.
+-- Keybindings and shift+right mouse do not work at refine panel at crafting stations, and retrait panel
 --> Refine panel inventory row names got this pattern: ZO_SmithingTopLevelRefinementPanelInventoryBackpack1Row7
 --> Check if this is properly supported at file FCOIS_Constants.lua, table FCOIS.checkVars.inventoryRowPatterns
-
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -55,7 +54,8 @@
 --  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
 --           if they are protected again now
 --  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
---  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of cr afting stations
+--  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
+--  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
 
 --
 --Added:

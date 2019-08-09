@@ -979,6 +979,8 @@ function FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
         --return ctrlVars.REFINEMENT_SLOT, FCOIS_CON_REFINE
     end
 end
+local GetExtractionSlotAndWhereAreWe = FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
+
 --Remove an item from a crafting extraction/refinement slot
 function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSlotted, scanOtherInvItemsIfSlotted)
 --d("[FCOIS]craftingPrevention.RemoveItemFromCraftSlot")
@@ -1023,6 +1025,7 @@ function FCOIS.craftingPrevention.RemoveItemFromCraftSlot(bagId, slotIndex, isSl
     --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
     FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
 end
+local RemoveItemFromCraftSlot = FCOIS.craftingPrevention.RemoveItemFromCraftSlot
 
 --Function to check if items for extraction/deconstruction/improvement are currently saved (got saved after adding them to the extraction slot)
 function FCOIS.craftingPrevention.CheckPreventCrafting(override, extractSlot, extractWhereAreWe)
@@ -1034,7 +1037,7 @@ function FCOIS.craftingPrevention.CheckPreventCrafting(override, extractSlot, ex
     FCOIS.craftingPrevention.extractWhereAreWe = nil
     --Get the extraction container and function
     if not override then
-        FCOIS.craftingPrevention.extractSlot, FCOIS.craftingPrevention.extractWhereAreWe = FCOIS.craftingPrevention.GetExtractionSlotAndWhereAreWe()
+        FCOIS.craftingPrevention.extractSlot, FCOIS.craftingPrevention.extractWhereAreWe = GetExtractionSlotAndWhereAreWe()
     else
         --Used for recursively called 3 enchanting creation rune slots
         FCOIS.craftingPrevention.extractSlot = extractSlot
@@ -1061,12 +1064,13 @@ function FCOIS.craftingPrevention.CheckPreventCrafting(override, extractSlot, ex
             [3] = ctrlVars.ENCHANTING_RUNE_CONTAINER_ASPECT,
         }
         local retVarLoop = false
+        local locCheckPreventCrafting = FCOIS.craftingPrevention.CheckPreventCrafting
         for i=1, 3 do
             local runeSlot = enchantingCreationSlos[i]
             if runeSlot ~= nil then
                 local returnVar = false
                 --Call function recursively and override with the 3 enchanting creation rune slots
-                returnVar = FCOIS.craftingPrevention.CheckPreventCrafting(true, runeSlot, FCOIS_CON_ENCHANT_CREATE)
+                returnVar = locCheckPreventCrafting(true, runeSlot, FCOIS_CON_ENCHANT_CREATE)
                 --Only overwrite the reurn variable for the loop if the value is "true" -> Abort the extract function
                 if not retVarLoop then
                     retVarLoop = returnVar
@@ -1111,6 +1115,7 @@ function FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(bagId, slotIndex, is
     --function FCOIS.outputItemProtectedMessage(bag, slot, whereAreWe, overrideChatOutput, suppressChatOutput, overrideAlert, suppressAlert)
     FCOIS.outputItemProtectedMessage(bagId, slotIndex, whereAreWe, true, false, false, false)
 end
+local RemoveItemFromRetraitSlot = FCOIS.craftingPrevention.RemoveItemFromRetraitSlot
 
 --Returns the bagId and slotIndex of a slotted item in the deconstruction/improvement/refine/enchant extraction slot
 --With ESO update Scalebreaker the multi-craft and deconstruct/extract is supported by the game. You are able to add multiple items with a
@@ -1153,6 +1158,7 @@ function FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
     end
     return bagId, slotIndex, slottedItems
 end
+local GetSlottedItemBagAndSlot = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot
 
 --Is the item protected at a crafting table's slot now
 function FCOIS.craftingPrevention.IsItemProtectedAtACraftSlotNow(bagId, slotIndex, scanOtherInvItemsIfSlotted)
@@ -1170,7 +1176,7 @@ local itemLink = GetItemLink(bagId, slotIndex)
         if allowedCraftingPanelIdsForMarkerRechecks[FCOIS.gFilterWhere] then
             --Is the bagId and slotIndex nil then get the slotted item's bagId and slotIndex now
             if bagId == nil and slotIndex == nil then
-                bagId, slotIndex, slottedItems = FCOIS.craftingPrevention.GetSlottedItemBagAndSlot()
+                bagId, slotIndex, slottedItems = GetSlottedItemBagAndSlot()
             end
             --local helper function to check the protection and remove the item from the craft slot
             local function checkProtectionAndRemoveFromSlotIfProtected(p_bagId, p_slotIndex)
@@ -1182,10 +1188,10 @@ local itemLink = GetItemLink(bagId, slotIndex)
                 if isProtected then
                     if isRetraitShown then
                         --d("Item is protected! Remove it from the retrait slot and output error message now")
-                        FCOIS.craftingPrevention.RemoveItemFromRetraitSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
+                        RemoveItemFromRetraitSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
                     else
                         --d("Item is protected! Remove it from the crafting slot and output error message now")
-                        FCOIS.craftingPrevention.RemoveItemFromCraftSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
+                        RemoveItemFromCraftSlot(p_bagId, p_slotIndex, false, scanOtherInvItemsIfSlotted)
                     end
                 end
             end

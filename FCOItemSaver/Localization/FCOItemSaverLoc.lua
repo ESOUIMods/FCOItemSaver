@@ -974,7 +974,7 @@ FCOIS.localizationVars.localizationAll = {
         --Transmutation / Retrait
         ["options_header_transmutation"]          = GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER), --Transmutation
         ["filter_retrait"]                        = "[Retrait]",
-        ["retrait_not_allowed"]                   = "Retraiting not allowed:",
+        ["retrait_not_allowed"]                   = GetString(SI_RETRAIT_STATION_PERFORM_RETRAIT) .. " not allowed:",
         ["button_context_menu_toggle_anti_retrait_on"]  = "Activate 'Anti-Retrait'",
         ["button_context_menu_toggle_anti_retrait_off"] = "Deactivate 'Anti-Retrait'",
         ["options_enable_block_retrait"]          = "Deactivate retrait",
@@ -1982,7 +1982,7 @@ FCOIS.localizationVars.localizationAll = {
         --Transmutation / Retrait
         ["options_header_transmutation"]          = GetString(SI_RETRAIT_STATION_ITEM_TO_RETRAIT_HEADER), --Transmutation
         ["filter_retrait"]                        = "[Retrait]",
-        ["retrait_not_allowed"]                   = "Retraiting nicht erlaubt:",
+        ["retrait_not_allowed"]                   = GetString(SI_RETRAIT_STATION_PERFORM_RETRAIT) .. " nicht erlaubt:",
         ["button_context_menu_toggle_anti_retrait_on"]  = "Aktiviere 'Anti-Retrait'",
         ["button_context_menu_toggle_anti_retrait_off"] = "Deaktiviere 'Anti-Retrait'",
         ["options_enable_block_retrait"]          = "Deaktiviere Retrait",

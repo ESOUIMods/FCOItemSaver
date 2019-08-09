@@ -781,6 +781,39 @@ local function FCOItemSaver_Player_Activated(...)
     end
 end
 
+--[[
+--* EVENT_GLOBAL_MOUSE_DOWN (*[MouseButtonIndex|#MouseButtonIndex]* _button_, *bool* _ctrl_, *bool* _alt_, *bool* _shift_, *bool* _command_)
+local function FCOItemSaver_EventMouseButtonDown(_, button)
+    --Is the current control below the mouse a supported row for the marker icons?
+    local mouseUnderControl = WINDOW_MANAGER:GetMouseOverControl()
+    if mouseUnderControl then
+        local mouseOverControlName = mouseUnderControl:GetName()
+        local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+        for _, patternToCheck in ipairs(inventoryRowPatterns) do
+            if mouseOverControlName:find(patternToCheck) then
+                FCOIS.gMouseButtonDown[button] = true
+                return
+            end
+        end
+    end
+end
+--* EVENT_GLOBAL_MOUSE_UP (*[MouseButtonIndex|#MouseButtonIndex]* _button_, *bool* _ctrl_, *bool* _alt_, *bool* _shift_, *bool* _command_)
+local function FCOItemSaver_EventMouseButtonUp(_, button)
+    --Is the current control below the mouse a supported row for the marker icons?
+    local mouseUnderControl = WINDOW_MANAGER:GetMouseOverControl()
+    if mouseUnderControl then
+        local mouseOverControlName = mouseUnderControl:GetName()
+        local inventoryRowPatterns = FCOIS.checkVars.inventoryRowPatterns
+        for _, patternToCheck in ipairs(inventoryRowPatterns) do
+            if mouseOverControlName:find(patternToCheck) then
+                FCOIS.gMouseButtonDown[button] = false
+                return
+            end
+        end
+    end
+end
+]]
+
 --Addon is now loading and building up
 local function FCOItemSaver_Loaded(eventCode, addOnName)
     --Libraries were loaded properly?
@@ -848,6 +881,11 @@ local function FCOItemSaver_Loaded(eventCode, addOnName)
             EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GUILD_BANK_SELECTED, FCOItemsaver_SelectGuildBank)
             --Retrait station is interacted with
             EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_RETRAIT_STATION_INTERACT_START, FCOItemsaver_RetraitStationInteract)
+            --Global mouse down/up event
+            --[[
+            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_DOWN, FCOItemSaver_EventMouseButtonDown)
+            EVENT_MANAGER:RegisterForEvent(gAddonName, EVENT_GLOBAL_MOUSE_UP, FCOItemSaver_EventMouseButtonUp)
+            ]]
 
             --=============================================================================================================
             --	LOAD USER SETTINGS

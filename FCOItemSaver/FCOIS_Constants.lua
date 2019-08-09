@@ -35,6 +35,9 @@ FCOIS.svAllAccountsName                     = "$AllAccounts"
 FCOIS.svSettingsForAllName                  = "SettingsForAll"
 FCOIS.svSettingsName                        = "Settings"
 
+--The global variable for the current mouseDown button
+FCOIS.gMouseButtonDown = {}
+
 --Data for the protection (colors, textures, ...)
 FCOIS.protectedData = {}
 FCOIS.protectedData.colors = {
@@ -270,7 +273,7 @@ FCOIS.checkVars.inventoryRowPatterns = {
 [2] = "^ZO_%a+InventoryList%dRow%d%d*",                                     --Inventory backpack
 [5] = "^ZO_CharacterEquipmentSlots.+$",                                     --Character
 [3] = "^ZO_CraftBagList%dRow%d%d*",                                         --CraftBag
-[5] = "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d*",             --Smithing refinement
+[5] = "^ZO_Smithing%aRefinementPanelInventoryBackpack%dRow%d%d*",             --Smithing refinement
 [6] = "^ZO_RetraitStation_%a+RetraitPanelInventoryBackpack%dRow%d%d*",      --Retrait
 [7] = "^ZO_QuickSlotList%dRow%d%d*",                                        --Quickslot
 [8] = "^ZO_RepairWindowList%dRow%d%d*",                                     --Repair at vendor

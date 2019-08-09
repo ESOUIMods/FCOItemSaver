@@ -278,9 +278,13 @@ local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, ...)
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    local bagId, slotId
+    --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
+    -->Then do not call the double click handler here
+    if IsShiftKeyDown() then return false end
 
+    --local bagId, slotId = FCOIS.MyGetItemDetails(self)
     -- make sure control contains an item
+    --[[
     if( self.dataEntry and self.dataEntry.data ) then
         bagId = self.dataEntry.data.bagId
         slotId = self.dataEntry.data.slotIndex
@@ -290,6 +294,7 @@ local function FCOItemSaver_CharacterItem_OnMouseDoubleClick(self, ...)
             slotId = self.slotIndex
         end
     end
+    ]]
 
     -- call the original handler function
     local func = GetEventHandler("OnMouseDoubleClick", self:GetName())
@@ -314,8 +319,13 @@ local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
     --Hide the context menu at last active panel
     FCOIS.hideContextMenu(FCOIS.gFilterWhere)
 
-    local bagId, slotId
+    --Check if SHIFT key is pressed and if mouse button is RIGHT mouse button
+    -->Then do not call the double click handler here
+    if IsShiftKeyDown() then return false end
+
+    local bagId, slotId = FCOIS.MyGetItemDetails(self)
     -- make sure control contains an item
+    --[[
     if( self.dataEntry and self.dataEntry.data ) then
         bagId = self.dataEntry.data.bagId
         slotId = self.dataEntry.data.slotIndex
@@ -325,6 +335,7 @@ local function FCOItemSaver_InventoryItem_OnMouseDoubleClick(self, ...)
             slotId = self.slotIndex
         end
     end
+    ]]
 
     if( bagId ~= nil and slotId ~= nil ) then
         --Set: Tell function ItemSelectionHandler that a drag&drop or doubleclick event was raised so it's not blocking the equip/use/etc. functions
@@ -1362,9 +1373,9 @@ function FCOIS.CreateHooks()
     else
         --ZO_Enchanting:SetEnchantingMode does not exist anymore (PTS -> Scalebreaker) and was replaced by ZO_Enchanting:OnModeUpdated()
         origEnchantingSetEnchantMode = ZO_Enchanting.OnModeUpdated
-        ZO_Enchanting.OnModeUpdated = function(...)
-            local retVar = origEnchantingSetEnchantMode(...)
-            local enchantingMode = ctrlVars.ENCHANTING.enchantingMode
+        ZO_Enchanting.OnModeUpdated = function(self, ...)
+            local retVar = origEnchantingSetEnchantMode(self, ...)
+            local enchantingMode = self.enchantingMode
             enchantingPostHook(enchantingMode)
             return retVar
         end
