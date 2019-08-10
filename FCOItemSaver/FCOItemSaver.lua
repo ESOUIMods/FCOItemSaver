@@ -15,7 +15,7 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 17
+-- Current max bugs: 18
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
@@ -28,9 +28,6 @@
 ---> slot!
 ----> See file src/FCOIS_Protection.lua, function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
 -----> Should get another parameter "scanOtherInvItemsIfSlotted"
-
--- 17) 2019-08-09 - Bugfix - Baertram
--- Drag&drop -> Destroy works at Vendor repair panel for marked  & protected items!
 
 
 ------------------------------------------------------------------
@@ -57,6 +54,8 @@
 --  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
 --  Bug #17: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled, Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair,
 --           fixed Anti-Destroy protection by drag&drop
+--  Bug #18: Deconstruction/Intricate icon tooltip shows "green -> protected" at the tooltips (icon / context menu entry) even if setting to allow deconstruction of items marked
+--           for deconstruction/intricate is enabled.
 
 --
 --Added:

@@ -53,6 +53,10 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
         local protectionEnabledColor = protectedColor[true]
         local protectionDisabledColor = protectedColor[false]
 
+        local panelId = FCOIS.gFilterWhere
+        local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
+        local whereAreWe = filterPanelIdToWhereAreWe[panelId]
+
         --Are we adding a tooltip to an equipment slot?
         if settings.showIconTooltipAtCharacter and pUpdateAllEquipmentTooltips then
             --Get current controls name
@@ -108,7 +112,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         markedGear = markedGear + 1
                         if tooltipGearText ~= "" then tooltipGearText = tooltipGearText .. "\n" end
                         local isDynamicGearIcon = FCOIS.isDynamicGearIcon(iconId) or false
-                        local gearSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconId, isDynamicGearIcon) or false
+                        local gearSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, isDynamicGearIcon, true, whereAreWe) or false
                         --Colorize the tooltip now so one always can see if the settings for this tooltip at the current panel are enabled!
                         if gearSettingsEnabled then
                             colorForText = protectionEnabledColor
@@ -137,7 +141,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                                 if externalAddonCall[IIfAaddonCallConst] == false then
                                     --Check if the current dynamic icons's settings are enabled at the given panel
                                     --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
-                                    local dynamicSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconId, true) or false
+                                    local dynamicSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, true, true, whereAreWe) or false
                                     --Colorize the tooltip now so one always can see if the settings for this tooltip at the current panel are enabled!
                                     if dynamicSettingsEnabled then
                                         colorForText = protectionEnabledColor
@@ -150,7 +154,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
                         --No gear and no dynamic icon
                         else
                             local colorForText = ""
-                            local normalSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(FCOIS.gFilterWhere, iconId) or false
+                            local normalSettingsEnabled = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconId, nil, true, whereAreWe) or false
                             if normalSettingsEnabled then
                                 colorForText = protectionEnabledColor
                             else
@@ -315,6 +319,8 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
     local activeFilterPanelIds = FCOIS.mappingVars.activeFilterPanelIds
     local protectedColorPrefixes = FCOIS.protectedData.colors
     local protectedTextures = FCOIS.protectedData.textures
+    local filterPanelIdToWhereAreWe = FCOIS.mappingVars.filterPanelIdToWhereAreWe
+    local panelId = FCOIS.gFilterWhere
     --For each possible filterPanelId:
     for libFilterPanelId, isActivated in pairs(activeFilterPanelIds) do
         if isActivated then
@@ -322,12 +328,17 @@ function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
             local filterPanelName = filterPanelNames[libFilterPanelId]
             if filterPanelName and filterPanelName ~= "" then
                 --Check the protection of the markerIcon there
-                local isProtected = FCOIS.checkIfProtectedSettingsEnabled(libFilterPanelId, markId)
+                local whereAreWe = filterPanelIdToWhereAreWe[libFilterPanelId]
+                local isProtected = FCOIS.checkIfProtectedSettingsEnabled(libFilterPanelId, markId, nil, true, whereAreWe)
                 local protectedColorPrefix = protectedColorPrefixes[isProtected]
                 local protectedTexture = protectedTextures[isProtected]
                 --Add the texture to the filterpanelName
                 --filterPanelName = zo_strformat(filterPanelName .. " <<1>>", zo_iconFormat(protectedTexture, 20, 20))
                 filterPanelName = zo_iconTextFormatNoSpace(protectedTexture, 20, 20, filterPanelName, protectedColorPrefix)
+                --Is the filterPanelId the current filterPanelid? Then add the [ in front and ]aat the end
+                if libFilterPanelId == panelId then
+                    filterPanelName = "[  " .. filterPanelName .. "  ]"
+                end
                 --And then add the texture, afterwards the name of the panel colorized to the text output
                 protectedAtStr = protectedAtStr .. "\n" .. protectedColorPrefix .. filterPanelName .. "|r"
             end

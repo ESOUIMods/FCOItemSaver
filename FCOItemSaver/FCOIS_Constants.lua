@@ -415,6 +415,12 @@ FCOIS.mappingVars.whereAreWeToFilterPanelId = {
         [FCOIS_CON_RESEARCH_DIALOG]	    =   LF_SMITHING_RESEARCH_DIALOG,
         [FCOIS_CON_JEWELRY_RESEARCH_DIALOG] = LF_JEWELRY_RESEARCH_DIALOG,
 }
+--The array for the mapping between the LibFilters FilterPanelId and the "WhereAreWe" (e.g. used in ItemSelectionHandler function)
+FCOIS.mappingVars.filterPanelIdToWhereAreWe = {}
+for whereAreWe, filterPanelId in pairs(FCOIS.mappingVars.whereAreWeToFilterPanelId) do
+    FCOIS.mappingVars.filterPanelIdToWhereAreWe[filterPanelId] = whereAreWe
+end
+
 --The array with the alert message texts for every filterPanel
 FCOIS.mappingVars.whereAreWeToAlertmessageText = {}
 
