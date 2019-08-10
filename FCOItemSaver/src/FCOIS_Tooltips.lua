@@ -307,7 +307,7 @@ function FCOIS.CreateToolTip(markerControl, markerId, doHide, pUpdateAllEquipmen
 end
 
 --Build the tooltip for e.g. a marker icon's context menu entry and show which panel is protected at this marker icon
-function FCOIS.buildMarkerIconProtectedWhereTooltip(markId, markIdState)
+function FCOIS.buildMarkerIconProtectedWhereTooltip(markId)
     local locVars = FCOIS.localizationVars
     local locVarsFCO = locVars.fcois_loc
     local protectedAtStr = "[" .. locVarsFCO["protection_at_panel"] .. "]"

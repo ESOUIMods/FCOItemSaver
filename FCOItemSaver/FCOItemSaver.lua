@@ -55,11 +55,8 @@
 --  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
 --  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
 --  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.
---  Bug #17: Working on fix bug #17
---Open: -- Drag&drop -> Destroy works at Vendor repair panel for marked  & protected items!
---
---Working: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled
----Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair
+--  Bug #17: At vendor repair -> Drag&Drop enabled, keybind enabled, SHIFT+right mouse enabled, Fixed protection variables settings.blockVendorBu, blockVendorBuyback, blockVendorRepair,
+--           fixed Anti-Destroy protection by drag&drop
 
 --
 --Added:
@@ -71,12 +68,9 @@
 --
 --Added on request:
 --SavedVariables can be enabled for all acounts the same
---> TODO: TESTs NEED TO BE DONE YET!!!
-
---> TODO: NON WORKING BECAUSE OF DEPENDENCY -> SO THE CODE IS IN BUT CURRENTLY DISABLED <-
 --Settings for tooltips at the context menu entries
 --Settings to add the protected panel information to the context menu item entries
---->These tooltips only work if using LibCustomMenu 3.8.0 (which is not released yet and may be chnaged in the future as well!)
+--->These tooltips only work if using LibCustomMenu 3.8.0!
 
 
 ------------------------------------------------------------------

@@ -835,7 +835,7 @@ FCOIS.localizationVars.localizationAll = {
         ["chatcommands_debug_off"]				 = "Debug: OFF",
         ["chatcommands_deepdebug_on"]			 = "Deep debug: ON",
         ["chatcommands_deepdebug_off"]			 = "Deep debug: OFF",
-		["chatcommands_debugdepth"]				 = "Debug depth: ", 
+		["chatcommands_debugdepth"]				 = "Debug depth: ",
         --Filters
         ["filter1_off"] 						 = "Lock filter OFF",
         ["filter1_on"] 						 	 = "Lock filter ON",
@@ -1020,6 +1020,10 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_show_menu_item_tooltip_TT"] = "Show a tooltip at each menu item this addon adds to context menus.",
         ["options_contextmenu_show_menu_item_tooltip_protected_panels"] = "Tooltip: Protected panels",
         ["options_contextmenu_show_menu_item_tooltip_protected_panels_TT"] = "Add information about the protected panels to the menu item tooltip.",
+        ["options_contextmenu_entries_enable_tooltip"]              = "Show tooltip at entry",
+        ["options_contextmenu_entries_enable_tooltip_TT"]           = "Show a tooltip at the context menu entries.",
+        ["options_contextmenu_entries_tooltip_protectedpanels"]     = "Show protected-state of panel",
+        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Show the protected-state of the item at the currently active filter panel id.\nGreen/Checkmark icon: Protected, Red/X icon: Not protected",
         ["protection_at_panel"]                             = "Protection at panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Enable / Disable",
@@ -2012,6 +2016,10 @@ FCOIS.localizationVars.localizationAll = {
         ["options_contextmenu_show_menu_item_tooltip_TT"] = "Zeige einen Tooltip an jedem Kontextmenü Eintrag an, den dieses AddOn hinzufügt.",
         ["options_contextmenu_show_menu_item_tooltip_protected_panels"] = "Tooltip: Schutz-Status je Panel",
         ["options_contextmenu_show_menu_item_tooltip_protected_panels_TT"] = "Füge Informationen zu dem Status des Schutzes je Filter-Panel im Kontextmenü Eintrag Tooltip an.",
+        ["options_contextmenu_entries_enable_tooltip"]              = "Zeige Tooltip am Eintrag",
+        ["options_contextmenu_entries_enable_tooltip_TT"]           = "Zeige einen Tooltip am Kontext-Menü Eintrag an.",
+        ["options_contextmenu_entries_tooltip_protectedpanels"]     = "Zeige Schutz-Status im Tooltip",
+        ["options_contextmenu_entries_tooltip_protectedpanels_TT"]  = "Zeige den aktuellen Schutz-Status, der Symbole am aktuell geöffneten Filter Panel, im Kontext-Menü Eintrag Tooltip an.\nGrün/Haken Symbol: Geschützt, Rot/X Symbol: Nicht geschützt",
         ["protection_at_panel"]                             = "Schutz-Status je Panel",
         --Enable/Disable icons
         ["options_header_enable_disable"]                   = "Aktivieren / Deaktivieren",

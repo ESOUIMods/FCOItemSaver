@@ -5802,6 +5802,29 @@ function FCOIS.BuildAddonMenu()
                     end,
                     default = FCOISdefaultSettings.contextMenuLeadingIconSize,
                 },
+                --Tooltip at context menu entry
+                {
+                    type = "checkbox",
+                    name = locVars["options_contextmenu_entries_enable_tooltip"],
+                    tooltip = locVars["options_contextmenu_entries_enable_tooltip_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltip end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltip = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryShowTooltip,
+                },
+                {
+                    type = "checkbox",
+                    name = locVars["options_contextmenu_entries_tooltip_protectedpanels"],
+                    tooltip = locVars["options_contextmenu_entries_tooltip_protectedpanels_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryTooltipProtectedPanels end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryTooltipProtectedPanels = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryTooltipProtectedPanels,
+                    disabled = function() return not FCOISsettings.contextMenuItemEntryShowTooltip end,
+                },
+
                 --------------------------------------------------------------------------------------------------------
                 {
                     type = "header",
