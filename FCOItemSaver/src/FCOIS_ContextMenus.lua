@@ -21,6 +21,44 @@ function FCOIS.createContextMenuAdditionalData(additionalDataTable)
     return additionalDataTable
 end
 
+--Function to show the tooltip at a ZO_Menu context menu entry, using library LibCustomMenu's function "runTooltip(control, inside)"
+function FCOIS.contextMenuEntryTooltipFunc(control, inside)
+    --Hide old text tooltips
+    ZO_Tooltips_HideTextTooltip()
+    if not inside or not ZO_Menu.items or not control or not control:IsMouseEnabled() then return end
+    local settings = FCOIS.settingsVars.settings
+    if not settings.contextMenuItemEntryShowTooltip or not settings.contextMenuItemEntryTooltipProtectedPanels then return end
+    --Check the selected menu index (row index)
+    --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
+    --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
+    local menuOwner = ZO_Menu.owner
+    if menuOwner then
+        local menuOwnerName = menuOwner:GetName()
+        if not menuOwnerName then return false end
+        --FCOIS specific checks for allowed parent control names of the ZO_Menu owner
+        local checkVars = FCOIS.checkVars
+        local notAllowedContextMenuParentControls = checkVars.notAllowedContextMenuParentControls
+        local notAllowedContextMenuControls = checkVars.notAllowedContextMenuControls
+        local notAllowed = notAllowedContextMenuParentControls[menuOwnerName] or false
+        if not notAllowed then notAllowed = notAllowedContextMenuControls[menuOwnerName] or false end
+        if notAllowed then return false end
+        --Build the text tooltip
+        local addonVars = FCOIS.addonVars
+        local textTooltip
+        local tooltipData = control.tooltipData
+        if tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
+            textTooltip = tooltipData.text
+            local tooltipAnchor = LEFT
+            if tooltipData.align ~= nil then
+                tooltipAnchor = tooltipData.align
+            end
+            --Show the text tooltip now
+            ZO_Tooltips_ShowTextTooltip(control, tooltipAnchor, textTooltip)
+        end
+    end
+    return true -- Set to true so LibCustomMenu's function "runTooltip" won't try to show the text tooltip again
+end
+
 
 --========= INVENTORY SLOT - PRIMARY ACTION =================================
 --Context menu function for the "right-click" context menu at normal inventory items
@@ -455,44 +493,6 @@ function FCOIS.refreshPopupDialogButtons(rowControl, override)
             rowControl.disableControl = false
         end
     end -- if not ZO_ListDialog1:IsHidden() then
-end
-
---Function to show the tooltip at a context menu entry
-function FCOIS.contextMenuEntryTooltipFunc(control, inside)
-    --Hide old text tooltips
-    ZO_Tooltips_HideTextTooltip()
-    if not inside or not ZO_Menu.items or not control or not control:IsMouseEnabled() then return end
-    local settings = FCOIS.settingsVars.settings
-    if not settings.contextMenuItemEntryShowTooltip or not settings.contextMenuItemEntryTooltipProtectedPanels then return end
-    --Check the selected menu index (row index)
-    --index = zo_max(zo_min(index, #ZO_Menu.items), 1)
-    --Check if the parentControl of the menu's item menu (e.g. the inventory row) is an allowed FCOIS control
-    local menuOwner = ZO_Menu.owner
-    if menuOwner then
-        local menuOwnerName = menuOwner:GetName()
-        if not menuOwnerName then return false end
-        --FCOIS specific checks for allowed parent control names of the ZO_Menu owner
-        local checkVars = FCOIS.checkVars
-        local notAllowedContextMenuParentControls = checkVars.notAllowedContextMenuParentControls
-        local notAllowedContextMenuControls = checkVars.notAllowedContextMenuControls
-        local notAllowed = notAllowedContextMenuParentControls[menuOwnerName] or false
-        if not notAllowed then notAllowed = notAllowedContextMenuControls[menuOwnerName] or false end
-        if notAllowed then return false end
-        --Build the text tooltip
-        local addonVars = FCOIS.addonVars
-        local textTooltip
-        local tooltipData = control.tooltipData
-        if tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
-            textTooltip = tooltipData.text
-            local tooltipAnchor = LEFT
-            if tooltipData.anchor then
-                tooltipAnchor = tooltipData.anchor
-            end
-            --Show the text tooltip now
-            ZO_Tooltips_ShowTextTooltip(control, tooltipAnchor, textTooltip)
-        end
-    end
-    return true -- Set to true so LibCustomMenu's function "runTooltip" won't try to show the text tooltip again
 end
 
 --This function will add the FCOIS entries to the right-click context menu of e.g. inventory items
