@@ -49,8 +49,8 @@ function FCOIS.contextMenuEntryTooltipFunc(control, inside)
         if tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
             textTooltip = tooltipData.text
             local tooltipAnchor = LEFT
-            if tooltipData.align ~= nil then
-                tooltipAnchor = tooltipData.align
+            if tooltipData["align"] ~= nil then
+                tooltipAnchor = tooltipData["align"]
             end
             --Show the text tooltip now
             ZO_Tooltips_ShowTextTooltip(control, tooltipAnchor, textTooltip)
@@ -716,6 +716,12 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
         contextMenuEntryTextPre = contextMenuEntryTextPre .. buttonText
     end
 
+    --Tooltip at context menu entry align
+    local tooltipAlign = LEFT
+    if isEquipmentSlot then
+        tooltipAlign = RIGHT
+    end
+
     local locVars = FCOIS.localizationVars
     local locVarsFCOIS = locVars.fcois_loc
     local contMenuVars = FCOIS.contextMenuVars
@@ -745,11 +751,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 menuItemType = MENU_ADD_OPTION_LABEL
                 tooltipText = ""
             end
-            local alignTooltipTo = LEFT
-            if isEquipmentSlotContextmenu == true then alignTooltipTo = RIGHT end
             --                              AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, customMenuItemData)
             contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil)
-            AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, contMenuVars.contextMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = tooltipText,["align"] = alignTooltipTo}))
+            AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, contMenuVars.contextMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = tooltipText, ["align"] = tooltipAlign}))
         end
     end
 
@@ -791,7 +795,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     normalColor     = colDef,
                     highlightColor  = colDef,
                     tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                    tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                    tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                 }
             else
                 --use the submenu for the dynamic icons?
@@ -803,13 +807,13 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                     }
                 else
                     --AddMenuItem(locVars.lTextEquipmentMark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL)
 --d("[FCOIS]AddMark - markId: " ..tostring(markId) .. ", text: " ..tostring(locVars.lTextEquipmentMark[markId]))
                     newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId], function()  FCOIS.MarkAllEquipment(rowControl, markId, refreshList, false) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
-                    AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}))
+                    AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                 end
             end
         else
@@ -823,7 +827,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                     }
                 else
                     newSubEntry = {
@@ -833,7 +837,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                     }
                 end
             else
@@ -849,11 +853,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                         }
                     else
                         newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
-                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}))
+                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                     end
                 else
                     --use the submenu for the dynamic icons?
@@ -865,11 +869,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             normalColor     = colDef,
                             highlightColor  = colDef,
                             tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                         }
                     else
                         newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
-                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}))
+                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                     end
                 end
             end
@@ -890,7 +894,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                     normalColor     = colDef,
                     highlightColor  = colDef,
                     tooltip             = FCOIS.contextMenuEntryTooltipFunc,
-                    tooltipData         = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText}),
+                    tooltipData         = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                 }
             else
                 --use the submenu for the dynamic icons?
@@ -902,11 +906,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText}),                    }
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),                    }
                 else
                     --AddMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL)
                     newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextMark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, false, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
-                    AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText}))
+                    AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextMark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                 end
             end
         else
@@ -920,7 +924,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         myfont          = myFont,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}),
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                     }
                 else
                     newSubEntry = {
@@ -930,7 +934,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                         normalColor     = colDef,
                         highlightColor  = colDef,
                         tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}),
+                        tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                     }
                 end
             else
@@ -946,11 +950,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}),
+                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                         }
                     else
                         newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
-                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}))
+                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                     end
                 else
                     --use the submenu for the dynamic icons?
@@ -962,11 +966,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             normalColor     = colDef,
                             highlightColor  = colDef,
                             tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                            tooltipDta     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}),
+                            tooltipDta     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}),
                         }
                     else
                         newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextDemark[markId], function() FCOIS.MarkMe(rowControl, markId, refreshList, true, refreshPopupDialog) end, MENU_ADD_OPTION_LABEL, myFont, colDef, colDef, nil, nil)
-                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText}))
+                        AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, newAddedMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = contextMenuEntryTextPre .. locVars.lTextDemark[markId] .. "\n" .. tooltipText, ["align"] = tooltipAlign}))
                     end
                 end
             end
