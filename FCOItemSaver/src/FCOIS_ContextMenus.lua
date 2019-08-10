@@ -745,9 +745,11 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                 menuItemType = MENU_ADD_OPTION_LABEL
                 tooltipText = ""
             end
+            local alignTooltipTo = LEFT
+            if isEquipmentSlotContextmenu == true then alignTooltipTo = RIGHT end
             --                              AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, customMenuItemData)
             contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil)
-            AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, contMenuVars.contextMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = tooltipText}))
+            AddCustomMenuTooltip(FCOIS.contextMenuEntryTooltipFunc, contMenuVars.contextMenuIndex, FCOIS.createContextMenuAdditionalData({["text"] = tooltipText,["align"] = alignTooltipTo}))
         end
     end
 
@@ -847,7 +849,7 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
                             myfont          = myFont,
                             highlightColor  = colDef,
                             tooltip         = FCOIS.contextMenuEntryTooltipFunc,
-                            tooltipDAta     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
+                            tooltipData     = FCOIS.createContextMenuAdditionalData({["text"] = contextMenuSubMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId] .. "\n" .. tooltipText, ["align"] = RIGHT}),
                         }
                     else
                         newAddedMenuIndex = AddCustomMenuItem(contextMenuEntryTextPre .. locVars.lTextEquipmentDemark[markId], function() FCOIS.MarkAllEquipment(rowControl, markId, refreshList, true) end, MENU_ADD_OPTION_LABEL, myFont, ZO_ColorDef:New(settings.contextMenuCustomMarkedNormalColor), colDef, nil, nil)
