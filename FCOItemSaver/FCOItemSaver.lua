@@ -15,21 +15,14 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 18
+-- Current max bugs: 19
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
--- 13) 2019-08-09 - Bugfix - Baertram
--- If the same items are available at the crafting stations deconstruct panel (each item got it's own row for own bagId and slotIndex) and both are not protected.
--- Slot one of the item in the deconstruction slot
--- Add the marker icon to protect it to the other "sane" item. Due to the different bagId and slotIndex the item in the slot won't get protected and not removed!
----> Need to scan the whole inventory list as an item get's marked at the deconstruction/improvement/retrait panel in order to remove all items which are protected from the
----> slot!
-----> See file src/FCOIS_Protection.lua, function FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, bulkMark)
------> Should get another parameter "scanOtherInvItemsIfSlotted"
-
-
+-- 19) 2019-08-11 - Bugfix - Beartran
+-- At the guild stroe sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
+-- file src/FCOIS_Protection.lua, function FCOIS.checkIfProtectedSettingsEnabled()
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -49,6 +42,8 @@
 --           flag buttons "right click" option to change the protection state at the current filterPanel.
 --  Bug #12: Changing the protection state with the right click on an additional inventory flag icon now checks if items are slotted to a craft/mail/trade... panel and unslots them
 --           if they are protected again now
+--  Bug #13: The same items at an inventory where one of them is inside the crafting extraction slot: If you protect one of the same itms now each other same item should be removed
+--           from the extraction slot
 --  Bug #14: Multicraft support for Scalebreaker (PTS). Enchanting panel was not recognized correctly anymore (function SetEnchantingMode was removed by ZOs)
 --  Bug #15: Keybindings and SHIFT+right mouse did not work at the refine panel of crafting stations, and not at retrait station
 --  Bug #16: Double clicking with SHIFT+right mouse button (to remove/readd marker icons) will trigger the protective checks at the crafting stations e.g.

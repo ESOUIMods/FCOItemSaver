@@ -1094,7 +1094,7 @@ function FCOIS.MarkMe(rowControl, markId, updateNow, doUnmark, refreshPopupDialo
                 --Are we marking an item inside a popup dialog, e.g. research or repair or enchant item?
                 if not refreshPopupDialog then
                     --Is the item protected at a craft station, or the guild store sell tab, or marked as junk now?
-                    FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false)
+                    FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
                 end
                 --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
                 FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, markId)
@@ -2413,7 +2413,8 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                                         --FCOIS.markedItems[iconId][FCOIS.SignItemId(myItemInstanceId, nil, nil, nil)] = true
                                         FCOIS.MarkItem(bagId, slotIndex, iconId, true, false)
                                         --Is the item protected at a craft station or the guild store sell tab now or marked as junk now?
-                                        FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, true)
+                                        -->Enable 3rd parameter "bulk" for the additional inventory "flag" icon
+                                        FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, true, true)
                                         atLeastOneMarkerChanged = true
                                         markerChangedAtBagAndSlot = true
                                         --Old value: False
@@ -2751,7 +2752,7 @@ function FCOIS.onContextMenuForAddInvButtonsButtonMouseUp(inventoryAdditionalCon
         --Check if the protection got enabled again and if any items are shown at the different slots (extract, deconstruct, mail, trade, ...)
         if settingsStateAfterChange == true then
             --Let the function use bagId = nil and slotIndex = nil to automatically find the items at the different slots and remove them if needed
-            FCOIS.IsItemProtectedAtASlotNow(nil, nil, false)
+            FCOIS.IsItemProtectedAtASlotNow(nil, nil, false, true)
         end
         --Update the tooltips at the items to reflect the protection state properly. But only update the currently visible ones
         --A refresh of the visible scroll list should be enough to refresh the marker icons and tooltips

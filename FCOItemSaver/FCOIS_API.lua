@@ -1319,7 +1319,7 @@ function FCOIS.MarkItemByKeybind(iconId, p_bagId, p_slotIndex)
             FCOIS.MarkItem(bagId, slotIndex, iconId, itemIsMarked, true)
             --If the item got marked: Check if the item is a junk item. Remove it from junk again then
             if itemIsMarked then
-				FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex)
+				FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
             end
         end
     else
