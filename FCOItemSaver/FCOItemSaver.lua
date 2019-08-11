@@ -15,14 +15,11 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 19
+-- Current max bugs: 20
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
--- 19) 2019-08-11 - Bugfix - Beartran
--- At the guild stroe sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
--- file src/FCOIS_Protection.lua, function FCOIS.checkIfProtectedSettingsEnabled()
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
@@ -51,7 +48,8 @@
 --           fixed Anti-Destroy protection by drag&drop
 --  Bug #18: Deconstruction/Intricate icon tooltip shows "green -> protected" at the tooltips (icon / context menu entry) even if setting to allow deconstruction of items marked
 --           for deconstruction/intricate is enabled.
-
+--  Bug #19: At the guild store sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
+--  Bug #20: At the deconstruction/improvement panel the tooltip for the "deconstruct/improve" icon shows "protected" (green) even if the item can be added to the extraction/improvement slot.
 --
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)

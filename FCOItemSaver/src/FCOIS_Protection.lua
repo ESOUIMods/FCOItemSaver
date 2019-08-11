@@ -187,8 +187,8 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         --Improve icon and item or jewelry item, and settings allow them to be improved?
         elseif (iconNr==FCOIS_CON_ICON_IMPROVEMENT and (whereAreWe == FCOIS_CON_IMPROVE or whereAreWe == FCOIS_CON_JEWELRY_IMPROVE) and settings.allowImproveImprovement == true) then
             protectionVal = false
-        --Extraction of glyphs or deconstruction of items with deconstruction icon
-        elseif (iconNr==FCOIS_CON_ICON_DECONSTRUCTION and (whereAreWe == FCOIS_CON_ENCHANT_EXTRACT or whereAreWe == FCOIS_CON_DECONSTRUCT) and settings.allowDeconstructDeconstruction == true) then
+        --Extraction of glyphs or deconstruction of items/jewelry with deconstruction icon
+        elseif (iconNr==FCOIS_CON_ICON_DECONSTRUCTION and (whereAreWe == FCOIS_CON_ENCHANT_EXTRACT or whereAreWe == FCOIS_CON_DECONSTRUCT or whereAreWe == FCOIS_CON_JEWELRY_DECONSTRUCT) and settings.allowDeconstructDeconstruction == true) then
             protectionVal = false
         --If current checked panel = deconstruction and the item is marked as intricate,
         --and the settings to allow deconstruction of marked Intricate items is enabled -> Abort here
@@ -917,29 +917,29 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
     local isAnyIconProtected = false
     local markedWithOneIcon = false
     -- if item is in any protection list, warn user
-    for i=1, numFilterIcons, 1 do
-        --d(">checking icon: " .. i)
+    for iconToCheck=1, numFilterIcons, 1 do
+        --d(">checking icon: " .. iconToCheck)
         --Is the item marked with an icon?
-        if FCOIS.checkIfItemIsProtected(i, id) then
-            --d(">> Decon: Item is protected with the icon " .. i)
+        if FCOIS.checkIfItemIsProtected(iconToCheck, id) then
+            --d(">> Decon: Item is protected with the icon " .. iconToCheck)
             markedWithOneIcon = true
             --Reset the return variable for each icon again to the global block variable!
             isBlockedLoop = isBlocked
             --Check if the current icon in the loop is an dynamic icon which can have special anti-settings (icon depending, not overall check depending!)
-            local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic[i]
+            local isDynamicIcon = FCOIS.mappingVars.iconIsDynamic[iconToCheck]
             --============== DYNAMIC ICON CHECKS - START ===================================
             --Is the icon a dynamic icon?
             if isDynamicIcon then
                 --Check the settings again now to see if this icon's dyanmic anti-settings are enabled for the given panel "whereAreWe"
                 --Call with 3rd parameter "isDynamicIcon" = true to skip "is dynamic icon check" inside the function again
-                isBlockedLoop = FCOIS.checkIfProtectedSettingsEnabled(panelId, i, true) --panelId could be LF_SMITHING_DECONSTRUCT or LF_JEWELRY_DECONSTRUCT
+                isBlockedLoop = FCOIS.checkIfProtectedSettingsEnabled(panelId, iconToCheck, true) --panelId could be LF_SMITHING_DECONSTRUCT or LF_JEWELRY_DECONSTRUCT
                 --d("Dynamic icon protection check for panel '" .. tostring(LF_SMITHING_DECONSTRUCT) .."' returned: " .. tostring(isBlockedLoop))
             end
             --============== DYNAMIC ICON CHECKS - END =====================================
 
             --============== SPECIAL ITEM & ICON CHECKS ====================================
             --Icon for deconstruction, and settings allow deconstruction?
-            if i == FCOIS_CON_ICON_DECONSTRUCTION and settings.allowDeconstructDeconstruction then
+            if iconToCheck == FCOIS_CON_ICON_DECONSTRUCTION and settings.allowDeconstructDeconstruction then
                 --dont block item: Set loop variable to false so isAnyIconProtected and isBlockedLoop are not true!
                 isBlockedLoop = false
                 --Is the setting enabled to allow deconstruction for items marked for deconstruction, even if other marker icons are active?
@@ -949,7 +949,7 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
                     return false
                 end
                 --Icon for intricate, and settings allows deconstruction?
-            elseif i==FCOIS_CON_ICON_INTRICATE and settings.allowDeconstructIntricate then
+            elseif iconToCheck==FCOIS_CON_ICON_INTRICATE and settings.allowDeconstructIntricate then
                 --dont block item: Set loop variable to false so isAnyIconProtected and isBlockedLoop are not true!
                 isBlockedLoop = false
             end
@@ -958,8 +958,8 @@ function FCOIS.DeconstructionSelectionHandler(bag, slot, echo, overrideChatOutpu
             if not isAnyIconProtected and isBlockedLoop then
                 isAnyIconProtected = true
             end
-        end -- if FCOIS.checkIfItemIsProtected(i, id) then
-    end -- for i=1, numFilterIcons, 1 do
+        end -- if FCOIS.checkIfItemIsProtected(iconToCheck, id) then
+    end -- for iconToCheck=1, numFilterIcons, 1 do
 
     --======= ITEM IS BLOCKED ! - START ============================================
     if isAnyIconProtected then
