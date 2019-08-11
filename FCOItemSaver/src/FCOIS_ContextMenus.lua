@@ -16,7 +16,6 @@ local ctrlVars = FCOIS.ZOControlVars
 --Create a table with additional context menu variables and values
 --+ the entry "creatingAddon" to identify the custom context menu entries and related addon
 function FCOIS.createContextMenuAdditionalData(additionalDataTable)
-    if menuIndex == nil then return end
     local addonVars = FCOIS.addonVars
     additionalDataTable["creatingAddon"] = addonVars.gAddonNameShort
     return additionalDataTable
@@ -24,6 +23,7 @@ end
 
 --Function to show the tooltip at a ZO_Menu context menu entry, using library LibCustomMenu's function "runTooltip(control, inside)"
 function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
+--d("[FCOIS]FCOIS.contextMenuEntryTooltipFunc-control: " .. tostring(control:GetName()) .. ", inside: " ..tostring(inside))
     --Hide old text tooltips
     ZO_Tooltips_HideTextTooltip()
     if not inside or not ZO_Menu.items or not control or not control:IsMouseEnabled() then return end
@@ -51,7 +51,7 @@ function FCOIS.contextMenuEntryTooltipFunc(control, inside, data)
         local addonVars = FCOIS.addonVars
         local textTooltip
         local tooltipData = data
-        if tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
+        if tooltipData and tooltipData.creatingAddon and tooltipData.creatingAddon == addonVars.gAddonNameShort then
             textTooltip = tooltipData.text
             local tooltipAnchor = LEFT
             if tooltipData["align"] ~= nil then
@@ -68,9 +68,9 @@ end
 --build/enhance the tooltip text then and return the
 --so the function FCOIS.contextMenuEntryTooltipFunc(control, inside, data) can show the tooltip later on via LibCustomMenu
 function FCOIS.CheckBuildAndAddCustomMenuTooltip(align, tooltipText)
+--d("[FCOIS]CheckBuildAndAddCustomMenuTooltip")
     local settings = FCOIS.settingsVars.settings
     if not settings.contextMenuItemEntryShowTooltip then return end
-    --Create the data in the table FCOIS.additionalZO_MenuItemData
     return FCOIS.createContextMenuAdditionalData({["align"] = align, ["text"] = tooltipText})
 end
 
@@ -769,8 +769,9 @@ function FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, 
             --                              AddCustomMenuItem(mytext, myfunction, itemType, myFont, normalColor, highlightColor, itemYPad, horizontalAlignment, customMenuItemData)
             contMenuVars.contextMenuIndex = AddCustomMenuItem(addonVars.addonNameContextMenuEntry, function() callbackFnc() end, menuItemType, nil, nil, nil, nil, nil)
             AddCustomMenuTooltip(function(control, inside)
-                local data=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, tooltipText)
-                FCOIS.contextMenuEntryTooltipFunc(control, inside, data) end,
+                local tooltipData=FCOIS.CheckBuildAndAddCustomMenuTooltip(tooltipAlign, tooltipText)
+FCOIS._tooltipData = tooltipData
+                FCOIS.contextMenuEntryTooltipFunc(control, inside, tooltipData) end,
             contMenuVars.contextMenuIndex)
         end
     end
@@ -1985,7 +1986,7 @@ function FCOIS.showContextMenuFilterButton(parentButton, p_FilterPanelId, contex
         end
     end
     --Show the context menu now
-    ShowMenu()
+    ShowMenu(parentButton)
     --Reanchor the menu more to the left and bottom
     reAnchorMenu(ZO_Menu, -5, -2)
 end

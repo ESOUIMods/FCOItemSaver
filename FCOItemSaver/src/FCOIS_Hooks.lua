@@ -667,7 +667,7 @@ function FCOIS.CreateHooks()
                             AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
                         end
                     end
-                    ShowMenu()
+                    ShowMenu(rowControl)
                 end, 30)
             end
         end -- if contextMenuEntriesAdded > 0 then
