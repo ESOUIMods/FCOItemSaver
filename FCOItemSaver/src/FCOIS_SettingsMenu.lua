@@ -5815,6 +5815,17 @@ function FCOIS.BuildAddonMenu()
                 },
                 {
                     type = "checkbox",
+                    name = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey"],
+                    tooltip = locVars["options_contextmenu_entries_enable_tooltip_only_SHIFTkey_TT"],
+                    getFunc = function() return FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly end,
+                    setFunc = function(value) FCOISsettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly = value
+                    end,
+                    width = "half",
+                    default = FCOISdefaultSettings.contextMenuItemEntryShowTooltipWithSHIFTKeyOnly,
+                    disabled = function() return not FCOISsettings.contextMenuItemEntryShowTooltip end,
+                },
+                {
+                    type = "checkbox",
                     name = locVars["options_contextmenu_entries_tooltip_protectedpanels"],
                     tooltip = locVars["options_contextmenu_entries_tooltip_protectedpanels_TT"],
                     getFunc = function() return FCOISsettings.contextMenuItemEntryTooltipProtectedPanels end,

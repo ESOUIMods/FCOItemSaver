@@ -244,6 +244,7 @@ function FCOIS.buildDefaultSettings()
 		useContextMenuCustomMarkedNormalColor = true,
 		contextMenuCustomMarkedNormalColor = {["r"] = 1,["g"] = 0,["b"] = 0,["a"] = 1},
 		contextMenuItemEntryShowTooltip	= false,
+		contextMenuItemEntryShowTooltipWithSHIFTKeyOnly = false,
 		contextMenuItemEntryTooltipProtectedPanels	= false,
 		showArmorTypeIconAtCharacter = false,
 		armorTypeIconAtCharacterX	 = 15,

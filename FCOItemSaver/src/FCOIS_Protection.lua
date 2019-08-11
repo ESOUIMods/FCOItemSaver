@@ -190,9 +190,12 @@ function FCOIS.checkIfProtectedSettingsEnabled(checkType, iconNr, isDynamicIcon,
         --Extraction of glyphs or deconstruction of items/jewelry with deconstruction icon
         elseif (iconNr==FCOIS_CON_ICON_DECONSTRUCTION and (whereAreWe == FCOIS_CON_ENCHANT_EXTRACT or whereAreWe == FCOIS_CON_DECONSTRUCT or whereAreWe == FCOIS_CON_JEWELRY_DECONSTRUCT) and settings.allowDeconstructDeconstruction == true) then
             protectionVal = false
-        --If current checked panel = deconstruction and the item is marked as intricate,
+        --If current checked panel = deconstruction or jewelry deconstruction and the item is marked as intricate,
         --and the settings to allow deconstruction of marked Intricate items is enabled -> Abort here
-        elseif (iconNr==FCOIS_CON_ICON_INTRICATE and whereAreWe == FCOIS_CON_DECONSTRUCT and settings.allowDeconstructIntricate == true) then
+        elseif (iconNr==FCOIS_CON_ICON_INTRICATE and (whereAreWe == FCOIS_CON_DECONSTRUCT or whereAreWe == FCOIS_CON_JEWELRY_DECONSTRUCT) and settings.allowDeconstructIntricate == true) then
+            protectionVal = false
+        --If the checked panel is the research popup dialog and the icon is the research icon
+        elseif (iconNr==FCOIS_CON_ICON_RESEARCH and (whereAreWe == FCOIS_CON_RESEARCH_DIALOG or whereAreWe == FCOIS_CON_JEWELRY_RESEARCH_DIALOG) and settings.allowResearch == true) then
             protectionVal = false
         end
     end

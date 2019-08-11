@@ -15,10 +15,11 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 20
+-- Current max bugs: 21
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
+
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
@@ -49,7 +50,8 @@
 --  Bug #18: Deconstruction/Intricate icon tooltip shows "green -> protected" at the tooltips (icon / context menu entry) even if setting to allow deconstruction of items marked
 --           for deconstruction/intricate is enabled.
 --  Bug #19: At the guild store sell tab the tooltip for the "sell" icon shows "protected" (green) even if the item can be added to the sell slot.
---  Bug #20: At the deconstruction/improvement panel the tooltip for the "deconstruct/improve" icon shows "protected" (green) even if the item can be added to the extraction/improvement slot.
+--  Bug #20: At the (jewelry)deconstruction/improvement panel the tooltip for the "deconstruct/improve/intricate" icon shows "protected" (green) even if the item can be added to the extraction/improvement slot.
+--  Bug #21: The reasearch marker icon is not shown as "unprotected (red) at the resaerch popup dialog" at the tooltips, if the setting to allow research of items marked for research is enabked.
 --
 --Added:
 --Copy & delete SavedVariables from server, account, character (SavedVariables copy & delete is a new settings submenu at the bottom, next to backup & restore)
