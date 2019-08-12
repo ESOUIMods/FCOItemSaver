@@ -15,11 +15,16 @@
 -- [Error/bug & feature messages to check] --
 ---------------------------------------------------------------------
 --[ToDo list] --
--- Current max bugs: 21
+-- Current max bugs: 23
 -- 1) 2019-01-14 - Bugfix - Baertram
 --Right clicking an item to show the context menu, and then left clicking somewhere else does not close the context menu on first click, but on 2nd click
 --> Bug within LibCustomMenu -> To be fixed by Votan?
 
+--22) Check - Baertram
+--German translations for the new settings "copy/delete char/account data"
+
+--23) Check - Baertram
+--Test if backup/restore is working properly with the "AllAccountsTheSame" settings enabled
 
 ------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]

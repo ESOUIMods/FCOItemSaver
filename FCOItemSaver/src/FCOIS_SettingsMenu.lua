@@ -382,6 +382,8 @@ function FCOIS.BuildAddonMenu()
         accountSrcOptionsValues = {}
         accountTargOptions = {}
         accountTargOptionsValues = {}
+        --The source server name
+        local sourceServerName = serverNames[srcServer]
         --Source accounts
         --Add the no entry entry
         table.insert(accountSrcOptions, noEntry)
@@ -392,15 +394,17 @@ function FCOIS.BuildAddonMenu()
         if FCOItemSaver_Settings then
             local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
             --Get account names from the SavedVariables, for each server
-            for _, serverData in pairs(FCOItemSaver_Settings) do
-                for accountName, _ in pairs(serverData) do
-                    --Do not add the current accountName again, and not the all accounts name
-                    if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
-                        accCnt = accCnt + 1
-                        table.insert(accountSrcOptions, accountName)
-                        table.insert(accountSrcOptionsValues, accCnt)
-                    elseif accountName == svAllAccountsName then
-                        allAccountsFoundInSV = true
+            for serverName, serverData in pairs(FCOItemSaver_Settings) do
+                if serverName == sourceServerName then
+                    for accountName, _ in pairs(serverData) do
+                        --Do not add the current accountName again, and not the all accounts name
+                        if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
+                            accCnt = accCnt + 1
+                            table.insert(accountSrcOptions, accountName)
+                            table.insert(accountSrcOptionsValues, accCnt)
+                        elseif accountName == svAllAccountsName then
+                            allAccountsFoundInSV = true
+                        end
                     end
                 end
             end
@@ -412,15 +416,54 @@ function FCOIS.BuildAddonMenu()
         end
         table.insert(accountSrcOptions, allAccountsText)
         table.insert(accountSrcOptionsValues, noEntryValue+2)
+
+        --Target accounts
+        allAccountsFoundInSV = false
         --Copy the source to the target accounts
-        accountTargOptions          = ZO_ShallowTableCopy(accountSrcOptions)
-        accountTargOptionsValues    = ZO_ShallowTableCopy(accountSrcOptionsValues)
+        --accountTargOptions          = ZO_ShallowTableCopy(accountSrcOptions)
+        --accountTargOptionsValues    = ZO_ShallowTableCopy(accountSrcOptionsValues)
+        --The target server name
+        local targetServerName = serverNames[targServer]
+        --Add the no entry entry
+        table.insert(accountTargOptions, noEntry)
+        table.insert(accountTargOptionsValues, noEntryValue)
+        --Get current acount name
+        table.insert(accountTargOptions, currentAccountNameMarked)
+        table.insert(accountTargOptionsValues, noEntryValue+1)
+        if FCOItemSaver_Settings then
+            local accCnt = 3 -- Preset with 3 so the 3rd item will be left empty for the "All accounts" entry
+            --Get account names from the SavedVariables, for each server
+            for serverName, serverData in pairs(FCOItemSaver_Settings) do
+                if serverName == targetServerName then
+                    for accountName, _ in pairs(serverData) do
+                        --Do not add the current accountName again, and not the all accounts name
+                        if accountName ~= currentAccountName and accountName ~= svAllAccountsName then
+                            accCnt = accCnt + 1
+                            local accNameTarg = accountName
+                            table.insert(accountTargOptions, accNameTarg)
+                            table.insert(accountTargOptionsValues, accCnt)
+                        elseif accountName == svAllAccountsName then
+                            allAccountsFoundInSV = true
+                        end
+                    end
+                end
+            end
+        end
+        --Add all acounts name at fixed positon 3! Color it red if it does not exist yet
+        allAccountsText = locVars["options_savedVariables_dropdown_selection3"]
+        if not allAccountsFoundInSV then
+            allAccountsText = "|cff0000" .. allAccountsText .. "|r"
+        end
+        table.insert(accountTargOptions, allAccountsText)
+        table.insert(accountTargOptionsValues, noEntryValue+2)
+
         --Reset chosen dropdown values
         doNotRunDropdownValueSetFunc = true
         if updateSourceOrTarget == nil or updateSourceOrTarget == true then
             srcAcc  = noEntryValue
             if FCOItemSaver_Settings_Copy_SV_Src_Acc then
                 FCOItemSaver_Settings_Copy_SV_Src_Acc:UpdateValue(srcAcc)
+                FCOItemSaver_Settings_Copy_SV_Src_Acc:UpdateChoices(accountSrcOptions, accountSrcOptionsValues)
             end
             srcChar = noEntryValue
             if FCOItemSaver_Settings_Copy_SV_Src_Char then
@@ -431,6 +474,7 @@ function FCOIS.BuildAddonMenu()
             targAcc = noEntryValue
             if FCOItemSaver_Settings_Copy_SV_Targ_Acc then
                 FCOItemSaver_Settings_Copy_SV_Targ_Acc:UpdateValue(targAcc)
+                FCOItemSaver_Settings_Copy_SV_Targ_Acc:UpdateChoices(accountTargOptions, accountTargOptionsValues)
             end
             targChar = noEntryValue
             if FCOItemSaver_Settings_Copy_SV_Targ_Char then
@@ -6362,6 +6406,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     setFunc = function(value)
                         if not doNotRunDropdownValueSetFunc then
+                            srcServer = value
                             reBuildAccountOptions(true)
                         end
                         srcServer = value
@@ -6381,6 +6426,7 @@ function FCOIS.BuildAddonMenu()
                     end,
                     setFunc = function(value)
                         if not doNotRunDropdownValueSetFunc then
+                            targServer = value
                             reBuildAccountOptions(false)
                         end
                         targServer = value
@@ -6490,19 +6536,34 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_copy_sv_to_account"],
                     tooltip = locVars["options_copy_sv_to_account_TT"],
                     func = function()
-                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
-                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
-                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
-                        local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
-                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, false)
-                        reBuildAccountOptions()
-                        reBuildCharacterOptions()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, false)
+                            reBuildAccountOptions()
+                            reBuildCharacterOptions()
+                        end
                     end,
                     isDangerous = true,
                     disabled = function()
-                        return (FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
+                        local srcServerName = serverNames[srcServer]
+                        local targetServerName = serverNames[targServer]
+                        local targetAccName = accountTargOptions[targAcc]
+                        local targetAccNameClean = cleanName(targetAccName, "account", targAcc)
+                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+
+                        if ((FCOIS.settingsNonServerDependendFound and FCOIS.defSettingsNonServerDependendFound)
                                 or (srcServer == noEntryValue or targServer == noEntryValue or srcAcc == noEntryValue or targAcc == noEntryValue)
                                 or (srcServer == targServer and srcAcc == targAcc)
+                                or (FCOItemSaver_Settings[srcServerName] == nil or FCOItemSaver_Settings[srcServerName][srcAccNameClean] == nil)
+                        ) then
+                            return true
+                        end
+                        return false
                     end,
                     warning = locVars["options_copy_sv_to_server_warning"],
                     width = "half",
@@ -6513,16 +6574,20 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_delete_sv_account"],
                     tooltip = locVars["options_delete_sv_account_TT"],
                     func = function()
-                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
-                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
-                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
-                        local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
-                        local forceReloadUI = false
-                        FCOIS.worldName = FCOIS.worldName or GetWorldName()
-                        if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName then forceReloadUI = true end
-                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, true, forceReloadUI)
-                        reBuildAccountOptions()
-                        reBuildCharacterOptions()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            local forceReloadUI = false
+                            FCOIS.worldName = FCOIS.worldName or GetWorldName()
+                            if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName then forceReloadUI = true end
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  nil, nil, true, forceReloadUI)
+                            reBuildAccountOptions()
+                            reBuildCharacterOptions()
+                        end
                     end,
                     isDangerous = true,
                     disabled = function()
@@ -6593,12 +6658,16 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_copy_sv_to_character"],
                     tooltip = locVars["options_copy_sv_to_character_TT"],
                     func = function()
-                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
-                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
-                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
-                        local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
-                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), false)
-                        reBuildCharacterOptions()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), false)
+                            reBuildCharacterOptions()
+                        end
                     end,
                     isDangerous = true,
                     disabled = function()
@@ -6617,15 +6686,19 @@ function FCOIS.BuildAddonMenu()
                     name = locVars["options_delete_sv_character"],
                     tooltip = locVars["options_delete_sv_character_TT"],
                     func = function()
-                        local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
-                        local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
-                        local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
-                        local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
-                        local forceReloadUI = false
-                        FCOIS.worldName = FCOIS.worldName or GetWorldName()
-                        if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName and tostring(targChar) == currentCharacterId then forceReloadUI = true end
-                        FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), true, forceReloadUI)
-                        reBuildCharacterOptions()
+                        if FCOISsettings.rememberUserAboutSavedVariablesBackup == true then
+                            FCOIS.ShowRememberUserAboutSavedVariablesBackupDialog()
+                        else
+                            local srcServerNameClean = cleanName(serverOptionsTarget[srcServer], "server")
+                            local targServerNameClean = cleanName(serverOptionsTarget[targServer], "server")
+                            local srcAccNameClean = cleanName(serverOptionsTarget[srcAcc], "account", srcAcc)
+                            local targAccNameClean = cleanName(serverOptionsTarget[targAcc], "account", targAcc)
+                            local forceReloadUI = false
+                            FCOIS.worldName = FCOIS.worldName or GetWorldName()
+                            if targServerNameClean == FCOIS.worldName and targAccNameClean == currentAccountName and tostring(targChar) == currentCharacterId then forceReloadUI = true end
+                            FCOIS.copySavedVars(srcServerNameClean, targServerNameClean, srcAccNameClean, targAccNameClean,  tostring(srcChar), tostring(targChar), true, forceReloadUI)
+                            reBuildCharacterOptions()
+                        end
                     end,
                     isDangerous = true,
                     disabled = function()
