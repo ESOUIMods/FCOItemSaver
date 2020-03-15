@@ -93,6 +93,10 @@ function FCOIS.checkIfOtherAddonActive(addOnName)
         --Add entry to constants table for the keybinds/SHIFT+right mouse click inventory row patterns
         table.insert(FCOIS.checkVars.inventoryRowPatterns, "^" .. FCOIS.otherAddons.IIFAitemsListEntryPrePattern .. "*")         --Other addons: InventoryInsightFromAshes UI
     end
+    --AdvancedFilters: Plugin FCO DuplicateItemsFilter
+    if (addOnName == "AF_FCODuplicateItemsFilters" and AdvancedFilters ~= nil) then
+        FCOIS.otherAddons.AFFCODuplicateItemFilter = true
+    end
 end
 
 --Check for other addons and react on them
@@ -512,9 +516,8 @@ end
 --Function to check if an item is crafted via the addon Dolgubon's Lazy Writ Creator
 function FCOIS.checkLazyWritCreatorCraftedItem()
     local writCreatedItem, craftingType, addonRequester
-    if FCOIS.otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems then
-        LibLazCraft = LibLazyCrafting
-        writCreatedItem, craftingType, addonRequester = LibLazCraft:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
+    if FCOIS.otherAddons.LazyWritCreatorActive and WritCreater ~= nil and FCOIS.settingsVars.settings.autoMarkCraftedWritItems and LibLazyCrafting ~= nil then
+        writCreatedItem, craftingType, addonRequester = LibLazyCrafting:IsPerformingCraftProcess() --> returns boolean, type of crafting, addon that requested the craft
 --d("[FCOIS]checkLazyWritCreatorCraftedItem - writCreatedItem: " .. tostring(writCreatedItem) .. ", craftingType: " .. tostring(craftingType) .. ", addonRequester: " .. tostring(addonRequester))
         FCOIS.preventerVars.writCreatorCreatedItem = writCreatedItem and addonRequester == WritCreater.name
     end
