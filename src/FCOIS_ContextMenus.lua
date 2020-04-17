@@ -11,11 +11,14 @@ local ctrlVars = FCOIS.ZOControlVars
 
 --Compatibility functions
 local function menuVisibleCheck()
+    --New: Since API10030 - Typo was removed
+    if IsMenuVisible then
+         return IsMenuVisible()
     --Old: Before API10030 - Function name includes a typo!
-    if (IsMenuVisisble and IsMenuVisisble()) then return IsMenuVisisble()
-        --New: Since API10030 - Typo was removed
-    elseif (IsMenuVisible and IsMenuVisible()) then return IsMenuVisible() end
-    return nil
+    elseif IsMenuVisisble then
+        return IsMenuVisisble()
+    end
+    return false
 end
 
 --==========================================================================================================================================
@@ -45,6 +48,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
         end
     end
 
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local currentScene, currentSceneName = FCOIS.getCurrentSceneInfo()
     local isNewSlot = self.m_inventorySlot ~= FCOIS.preventerVars.lastHoveredInvSlot
     if isNewSlot then
         FCOIS.preventerVars.lastHoveredInvSlot = self.m_inventorySlot
@@ -212,10 +217,8 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
 
         --Equip
     elseif actionStringId == SI_ITEM_ACTION_EQUIP then
-        --Check the current scene and see if we are at the store
-        local currentScene = SCENE_MANAGER.currentScene.name
-        local isStore = (currentScene and currentScene == "store") or false
-        local isFence = (SCENE_MANAGER.currentScene == FENCE_SCENE) or false
+        local isStore = currentSceneName == ctrlVars.vendorSceneName or false
+        local isFence = currentScene == FENCE_SCENE or false
         --Or are we in the guild store/trading house?
         local isCurrentlyShowingGuildStore = not ctrlVars.GUILD_STORE:IsHidden()
         --Or are we currently showing the mail send panel?
@@ -236,8 +239,7 @@ function FCOIS.InvContextMenuAddSlotAction(self, actionStringId, ...)
     elseif actionStringId == SI_ITEM_ACTION_BANK_DEPOSIT then
         --Are we at the guild bank and is the protection setting for "non-withdrawable items" enabled?
         if settings.blockGuildBankWithoutWithdraw then
-            local currentScene = SCENE_MANAGER.currentScene.name
-            if (currentScene == ctrlVars.guildBankSceneName or currentScene == ctrlVars.guildBankGamepadSceneName) then
+            if (currentSceneName == ctrlVars.guildBankSceneName or currentSceneName == ctrlVars.guildBankGamepadSceneName) then
                 if FCOIS.guildBankVars.guildBankId == 0 then return true end
                 return not FCOIS.checkIfGuildBankWithdrawAllowed(FCOIS.guildBankVars.guildBankId)
             end
@@ -1061,7 +1063,8 @@ end
         end
 
         --Show the new added menu entries inside the context menu borders
-        --ShowMenu(rowControl)
+        --Do not remove this or context menu is not working anymore in ZO_Dialog1 !
+        ShowMenu(rowControl)
         --Last context menu entry was added?
         if preventerVars.buildingInvContextMenuEntries == false then
             --Reset the IIfA clicked row variables again if the last entry of the context menu was added!
@@ -1428,7 +1431,7 @@ function FCOIS.changeContextMenuEntryTexts(iconId)
         locContEntries.menu_remove_dynamic_text = {}
 
         --Loop over all icons and build the texts for the context menus now
-        for p_iconId=1, numFilterIcons do
+        for p_iconId=FCOIS_CON_ICON_LOCK, numFilterIcons do
             FCOIS.preventerVars.buildingSlotActionTexts = true
             --Recursively call this function for each iconId
             FCOIS.changeContextMenuEntryTexts(p_iconId)
@@ -1512,7 +1515,7 @@ function FCOIS.resetUserContextMenuSortOrder()
     local defaults = FCOIS.settingsVars.defaults
     local retVar = false
     --For each icon get the default sort order and reset it so the LAM dropdown boxes show the standard sort order again
-    for iconId = 1, numFilterIcons, 1 do
+    for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         settings.icon[iconId].sortOrder = defaults.icon[iconId].sortOrder
         settings.iconSortOrder[iconId]  = defaults.iconSortOrder[iconId]
     end
@@ -1530,7 +1533,7 @@ function FCOIS.checkIfUserContextMenuSortOrderValid(returnDuplicates)
     local settings = FCOIS.settingsVars.settings
     --local defaults = FCOIS.settingsVars.defaults
     --check each iconId if there are duplicates in the custom user sort order for the context menu
-    for i = 1, numFilterIcons, 1 do
+    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         if not checkDuplicateTable[settings.icon[i].sortOrder] then
 --d("> added sortOrder " .. i)
             checkDuplicateTable[settings.icon[i].sortOrder] = true
@@ -1550,7 +1553,7 @@ function FCOIS.checkIfUserContextMenuSortOrderValid(returnDuplicates)
         local rescanDuplicatesTable = {}
         --Add each icon to the duplicates table and mark those as duplicate which are in the checkDuplicateTable table
         --First add all icons with the standard settings and isDuplicate = false
-        for i = 1, numFilterIcons, 1 do
+        for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             if duplicatesTable[i] == nil then
                 --d(">Added sort order " .. tostring(i) .. " to the duplicates info table")
                 duplicatesTable[i] = { iconNr = i, sortOrder = settings.icon[i].sortOrder, duplicate = false }
@@ -1567,7 +1570,7 @@ function FCOIS.checkIfUserContextMenuSortOrderValid(returnDuplicates)
             if rescanData.sortOrder ~= nil then
                 --d(">Rescan sortOrder: " .. tostring(rescanData.sortOrder))
                 --Check each icon in the duplicate table
-                for i = 1, numFilterIcons, 1 do
+                for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     if duplicatesTable[i] ~= nil and duplicatesTable[i].sortOrder == rescanData.sortOrder and duplicatesTable[i].iconNr ~= rescanData.iconNr then
                         --d(">Found another duplicate at icon " .. tostring(duplicatesTable[i].iconNr))
                         duplicatesTable[i].duplicate = true
@@ -1802,7 +1805,7 @@ local function sortContextMenuEntries(menuEntriesUnsorted)
             table.insert(menuEntriesSorted, menuEntriesUnsorted[-1])
         end
         --Check each filter icon in the table (= sort order key)
-        for j = 1, numFilterIcons, 1 do
+        for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             --If the sort order is in the table -> Add it to the output table
             if FCOfilterButtonContextMenu[j] ~= nil then
                 table.insert(menuEntriesSorted, FCOfilterButtonContextMenu[j])
@@ -2343,13 +2346,10 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
     else
         --Inventory (mail, trade, etc.) or bank or craftbag (if other addons enabled the craftbag at mail panel etc.)
         --Get the current inventorytype
-        local inventoryType
-        --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
-        if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
-            inventoryType = INVENTORY_CRAFT_BAG
+        local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(FCOIS.gFilterWhere)
+        if inventoryType == INVENTORY_CRAFT_BAG then
             contextmenuType = "CRAFTBAG"
         else
-            inventoryType = mappingVars.InvToInventoryType[FCOIS.gFilterWhere] or nil
             contextmenuType = "INVENTORY"
         end
         --All non-filtered items will be in this list here:
@@ -2676,7 +2676,7 @@ local function ContextMenuForAddInvButtonsOnClicked(buttonCtrl, iconId, doMark, 
                         myItemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
                         if myItemInstanceId ~= nil then
                             --Check all icon Ids
-                            for iconIdLoop = 1, numFilterIcons, 1 do
+                            for iconIdLoop = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                                 --Check if the item is marked already AND if the settings for this marker icon is activated
                                 if FCOIS.checkIfItemIsProtected(iconIdLoop, myItemInstanceId) then
                                     --Clear the undo table once at the current panelId (keep all other panelIds !)

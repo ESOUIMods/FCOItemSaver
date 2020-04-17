@@ -135,7 +135,7 @@ local function OnScrollListRowSetupCallback(rowControl, data)
     local settings = FCOIS.settingsVars.settings
     local iconVars = FCOIS.iconVars
     local textureVars = FCOIS.textureVars
-    for i = 1, numFilterIcons, 1 do
+    for i = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         local iconData = settings.icon[i]
         FCOIS.CreateMarkerControl(rowControl, i, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
     end
@@ -165,7 +165,9 @@ ZO_PreHook("ZO_Menu_OnHide", function()
         end
     end
     --Check if the character window is shown and if the current scene is the inventory scene
-    if not ctrlVars.CHARACTER:IsHidden() and SCENE_MANAGER.currentScene.name == ctrlVars.invSceneName  then
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local _, currentSceneName = FCOIS.getCurrentSceneInfo()
+    if not ctrlVars.CHARACTER:IsHidden() and currentSceneName == ctrlVars.invSceneName  then
         --Show the PlayerProgressBar again as the context menu closes
         FCOIS.ShowPlayerProgressBar(true)
     end
@@ -530,7 +532,7 @@ function FCOIS.CreateHooks()
         local useSubContextMenu     = settings.useSubContextMenu
         local _, countDynIconsEnabled = FCOIS.countMarkerIconsEnabled()
         local useDynSubContextMenu  = (settings.useDynSubMenuMaxCount > 0 and  countDynIconsEnabled >= settings.useDynSubMenuMaxCount) or false
-        for iconId = 1, numFilterIcons, 1 do
+        for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             --Check if the icon (including gear sets) is enabled
             if settings.isIconEnabled[iconId] then
                 --Re-order the context menu entries by defaults, or with user settings
@@ -571,7 +573,7 @@ function FCOIS.CreateHooks()
         if contextMenuEntriesAdded > 0 then
             local addedCounter = 0
             FCOIS.preventerVars.buildingInvContextMenuEntries = true
-            for j = 1, numFilterIcons, 1 do
+            for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 if FCOcontextMenu[j] ~= nil then
                     addedCounter = addedCounter + 1
                     --Is the currently added entry with AddMark the "last one in this context menu"?
@@ -590,8 +592,9 @@ function FCOIS.CreateHooks()
             --As the (dynamic) sub menu entries were build, show them now
             if useSubContextMenu or useDynSubContextMenu then
                 zo_callLater(function()
-                    if FCOIS.customMenuVars.customMenuSubEntries ~= nil and #FCOIS.customMenuVars.customMenuSubEntries > 0 then
-                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", FCOIS.customMenuVars.customMenuSubEntries)
+                    local customMenuSubEntries = FCOIS.customMenuVars.customMenuSubEntries
+                    if customMenuSubEntries ~= nil and #customMenuSubEntries > 0 then
+                        AddCustomSubMenuItem("|c22DD22FCO|r ItemSaver", customMenuSubEntries)
                     else
                         if FCOIS.customMenuVars.customMenuDynSubEntries ~= nil and #FCOIS.customMenuVars.customMenuDynSubEntries > 0 then
                             local dynamicSubMenuEntryHeaderText = locVars["options_icons_dynamic"]
@@ -601,7 +604,8 @@ function FCOIS.CreateHooks()
                             AddCustomSubMenuItem(dynamicSubMenuEntryHeaderText, FCOIS.customMenuVars.customMenuDynSubEntries)
                         end
                     end
-                    --ShowMenu(rowControl)
+                    --Do not remove or dynamic submenu in contextmenus will be missing boundaries!
+                    ShowMenu(rowControl)
                 end, 30)
             end
         end -- if contextMenuEntriesAdded > 0 then
@@ -794,7 +798,7 @@ function FCOIS.CreateHooks()
         local textureVars = FCOIS.textureVars
 
         -- Create/Update all the icons for the current dialog row
-        for iconNumb = 1, numFilterIcons, 1 do
+        for iconNumb = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconData = settings.icon[iconNumb]
             FCOIS.CreateMarkerControl(rowControl, iconNumb, iconData.size or iconVars.gIconWidth, iconData.size or iconVars.gIconWidth, textureVars.MARKER_TEXTURES[iconData.texture])
         end -- for i = 1, numFilterIcons, 1 do
@@ -813,7 +817,7 @@ function FCOIS.CreateHooks()
         local disableControl = false
 
         -- Check the rowControl if the item is marked and update the OnMouseUp functions and the color of the item row then
-        for iconId = 1, numFilterIcons, 1 do
+        for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
             local iconIsProtected = FCOIS.checkIfItemIsProtected(iconId, myItemInstanceIdOfControl)
 
             --Special research icon handling
@@ -858,6 +862,7 @@ function FCOIS.CreateHooks()
             end
 
         end -- for j = 1, numFilterIcons, 1 do
+
         --Set an attribute to the row which can be checked in other functions of the rowControl too!
         rowControl.disableControl = disableControl
 
@@ -897,7 +902,7 @@ function FCOIS.CreateHooks()
                 local userOrderValid = FCOIS.checkIfUserContextMenuSortOrderValid()
                 local contextMenuEntriesAdded = 0
                 --check each iconId and build a sorted context menu then
-                for iconId = 1, numFilterIcons, 1 do
+                for iconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     --Check if the icon (including gear sets) is enabled
                     if settings.isIconEnabled[iconId] then
                         --Re-order the context menu entries by defaults, or with user settings
@@ -929,7 +934,7 @@ function FCOIS.CreateHooks()
                     --Clear the menu completely (should be empty by default as it does not exist on the dialogs)
                     ClearMenu()
                     --Add the context menu entries now
-                    for j = 1, numFilterIcons, 1 do
+                    for j = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         if FCOcontextMenu[j] ~= nil then
                             --FCOIS.AddMark(rowControl, markId, isEquipmentSlot, refreshPopupDialog, useSubMenu)
                             --Increase the global counter for the added context menu entries so the function FCOIS.AddMark can react on it
@@ -943,11 +948,12 @@ function FCOIS.CreateHooks()
 
             --Mouse button was released on the row?
             if upInside then
+--d("[FCOIS]upInside: " ..tostring(upInside) .. ", disable: " ..tostring(rowControl.disableControl) .. ", isSoulGem: " ..tostring(isSoulGem))
                 --Check if the clicked row got marker icons which protect this item!
                 FCOIS.refreshPopupDialogButtons(rowControl, false)
                 local dialog = ctrlVars.RepairItemDialog
                 --Should this row be protected and disabled buttons and keybindings
-                if rowControl.disableControl == true then
+                if rowControl.disableControl == true and not isSoulGem == true then
                     --d("MouseUpInside, rowControl.disableControl-> true")
                     --Do nothing (true tells the handler function that everything was achieved already in this function
                     --and the normal "hooked" functions don't need to be run afterwards)

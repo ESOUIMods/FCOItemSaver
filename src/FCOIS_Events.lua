@@ -332,7 +332,8 @@ local function FCOItemSaver_Open_Player_Bank(event, bagId)
         --Scan the house bank for non marked items, or items that need to be transfered from ZOs marker icons to FCOIS marker icons
         zo_callLater(function()
             --Scan for items that are locked by ZOs and should be transfered to FCOIS
-            FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
+            -->Disabled as this should only be done via the settings menu, manually!
+            --FCOIS.scanInventoriesForZOsLockedItems(false, bagId)
             --Scan if house bank got items that should be marked automatically
             scanInventory(bagId, nil)
         end, 250)
@@ -476,8 +477,7 @@ local function FCOItemSaver_Crafting_Interact(_, craftSkill)
     end
 end
 
-local updateSetTrackerMarker
-if FCOIS.otherAddons then updateSetTrackerMarker = FCOIS.otherAddons.SetTracker.updateSetTrackerMarker end
+local updateSetTrackerMarker = FCOIS.updateSetTrackerMarker
 --Inventory slot gets updated function
 local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, itemSoundCategory, updateReason)
     --Do not mark or scan inventory if writcreater addon is crafting items
@@ -526,7 +526,9 @@ local function FCOItemSaver_Inv_Single_Slot_Update(_, bagId, slotId, isNewItem, 
     --We don't need to scan it with our functions too at this case
     if IsUnderArrest() then return end
     --Do not execute if horse is changed
-    if SCENE_MANAGER:GetCurrentScene() == STABLES_SCENE then return end
+    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+    if currentScene == STABLES_SCENE then return end
     --Check if item in slot is still there
     if GetItemType(bagId, slotId) == ITEMTYPE_NONE then return end
 --d(">3")
@@ -712,7 +714,7 @@ function FCOIS.checkForPlayerActivatedTasks()
     end
 
     --Was the item ID type changed to unique IDs: Show the migrate data from old item IDs to unique itemIDs now
-    if FCOIS.preventerVars.migrateItemMarkers then
+    if FCOIS.preventerVars.migrateItemMarkers == true then
         FCOIS.ShowAskBeforeMigrateDialog()
     end
 end

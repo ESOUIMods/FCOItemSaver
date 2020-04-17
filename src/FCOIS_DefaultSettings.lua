@@ -22,6 +22,7 @@ function FCOIS.buildDefaultSettings()
 		iconPosition				= {},
 		iconPositionCrafting		= {},
 		iconPositionCharacter		= {},
+		iconSizeCharacter			= 20,
 		iconSortOrder				= {},
 		filterButtonLeft			= {},
 		filterButtonTop				= {},
@@ -291,6 +292,9 @@ function FCOIS.buildDefaultSettings()
 		autoMarkKnownRecipesIconNr = FCOIS_CON_ICON_SELL_AT_GUILDSTORE,
 		sortIconsInAdditionalInvFlagContextMenu = false,
 		keybindMoveMarkedForSellToJunkEnabled = true,
+		keybindMoveItemToJunkEnabled = false,
+		keybindMoveItemToJunkAddSellIcon = false,
+		markerIconOffset = {}
     }
     --Local constant values for speed-up
     local numLibFiltersFilterPanelIds   = FCOIS.numVars.gFCONumFilterInventoryTypes
@@ -342,7 +346,7 @@ function FCOIS.buildDefaultSettings()
 		["left"] 	= 0,
 		["top"] 	= 0,
 	}
-	for filterIconHelper = 1, numFilterIcons, 1 do
+	for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
        --Marker icons in inventories
        	FCOIS.settingsVars.defaults.markedItems[filterIconHelper] 	= {}
         --Defaults for filter button offsets
@@ -595,4 +599,14 @@ function FCOIS.buildDefaultSettings()
             }
         end
     end
+
+    --Added with FCOIS v1.8.4
+    FCOIS.settingsVars.defaults.markerIconOffset = FCOIS.settingsVars.defaults.markerIconOffset or {}
+    --Add offsets for the marker icons in the inventories for some special addons like:
+	-->GridList
+    FCOIS.settingsVars.defaults.markerIconOffset["GridList"] = {
+		x 		= 12,
+		y 		= -12,
+		scale 	= 90,
+	}
 end

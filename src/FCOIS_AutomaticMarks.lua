@@ -220,9 +220,18 @@ end
 
 --Do all the checks for the "automatic mark item as set"
 local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
+    --Todo :Remove after debugging!
+    local isDebuggingCase = false
+    --[[
+    if p_bagId == 1 and p_slotIndex == 26 then
+        d("[FCOIS]automaticMarkingSetsCheckFunc: " .. GetItemLink(p_bagId, p_slotIndex))
+        isDebuggingCase = true
+    end
+    ]]
+
     --Was the item crafted and the automatic "crafted" marker icon was set already, then abort here and do not set the "set" marker icon
     --if checkIfAutomaticCraftedMarkerIconIsSet() then return false end
---d("[FCOIS] automaticMarkingSetsCheckFunc - > go on...")
+    if isDebuggingCase then d("[FCOIS] automaticMarkingSetsCheckFunc - > go on...") end
     --First check if the item is a special item like the Maelstrom weapon or shield, or The Master's weapon
     local isSpecialItem = FCOIS.checkIfIsSpecialItem(p_bagId, p_slotIndex)
     --if the item is special it should be automatically marked as a set part, without any further checks!
@@ -233,7 +242,7 @@ local function automaticMarkingSetsCheckFunc(p_bagId, p_slotIndex)
 
     --Check if item is a set part with the wished trait
     local isSetPartWithWishedTrait, isSetPartAndIsValidAndGotTrait, setPartTraitMarkerIcon, isSet = FCOIS.isItemSetPartWithTraitNoControl(p_bagId, p_slotIndex)
---d("[FCOIS]automaticMarkingSetsCheckFunc " .. GetItemLink(p_bagId, p_slotIndex) .. ": isSet: " .. tostring(isSet) .. ", isSetPartWithWishedTrait: " .. tostring(isSetPartWithWishedTrait) .. ", isSetPartAndIsValidAndGotTrait: " .. tostring(isSetPartAndIsValidAndGotTrait) .. ", setPartTraitMarkerIcon: " .. tostring(setPartTraitMarkerIcon))
+    if isDebuggingCase then d("[FCOIS]automaticMarkingSetsCheckFunc " .. GetItemLink(p_bagId, p_slotIndex) .. ": isSet: " .. tostring(isSet) .. ", isSetPartWithWishedTrait: " .. tostring(isSetPartWithWishedTrait) .. ", isSetPartAndIsValidAndGotTrait: " .. tostring(isSetPartAndIsValidAndGotTrait) .. ", setPartTraitMarkerIcon: " .. tostring(setPartTraitMarkerIcon)) end
     --Build the data table which will be returned to the calling function, and then passed to the next additionalCheckFunc "automaticMarkingSetsAdditionalCheckFunc" function
     --in parameter table "p_itemData.fromCheckFunc"
     local retData = {}
@@ -247,32 +256,43 @@ end
 
 --Do all the additional checks for the "automatic mark item as set"
 local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncResult)
---d("[FCOIS.automaticMarkingSetsAdditionalCheckFunc]")
+    --d("[FCOIS.automaticMarkingSetsAdditionalCheckFunc]")
     --Should all marker icons be checked first? Then it was done BEFORE function "checkFunc" already by help of "toDos.checkIfAnyIconIsMarkedAlready"
     --Get the data from the checkfunc
     local isSetPartWithWishedTrait
     local isSetPartAndIsValidAndGotTrait
     local newMarkerIcon
     local itemLink
---FCOid = p_itemData
+
+    local isDebuggingCase = false
+
     if p_itemData ~= nil and p_itemData.bagId ~= nil and p_itemData.slotIndex ~= nil then
         itemLink = GetItemLink(p_itemData.bagId, p_itemData.slotIndex)
+        --[[
+        --Todo :Remove after debugging!
+        if p_itemData.bagId == 1 and p_itemData.slotIndex == 26 then
+            d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc: " .. itemLink)
+            isDebuggingCase = true
+        end
+        ]]
     end
     if p_itemData.fromCheckFunc ~= nil then
+        local fromCheckFunc = p_itemData.fromCheckFunc
         --Check if no further checks are needed and the item needs to be marked with the set icon
-        if p_itemData.fromCheckFunc["noFurtherChecksNeeded"] == true then
+        if fromCheckFunc["noFurtherChecksNeeded"] == true then
             --Return the values "nil" and "nil" -> Needed to abort all further marker icons and chat messages now!
             --Changed on 2018-08-04 from false, nil. But until this time the first checkFunc aborted the 2snd additional checkfunc,
             --which is now always called via parameter "additionalCheckFuncForce = true" and thus the chat was spammed with Marked potion as set part...
---d("<<aborting!")
+            --d("<<aborting due to: noFurtherChecksNeeded!")
             return nil, nil
         else
-            isSetPartWithWishedTrait          =  p_itemData.fromCheckFunc["isSetPartWithWishedTrait"]
-            isSetPartAndIsValidAndGotTrait    =  p_itemData.fromCheckFunc["isSetPartAndIsValidAndGotTrait"]
-            newMarkerIcon                     =  p_itemData.fromCheckFunc["newMarkerIcon"]
---d(">>" .. itemLink .. ", isSetPartWithATrait: " .. tostring(isSetPartAndIsValidAndGotTrait) .. ", isSetPartWithAWishedTrait: " .. tostring(isSetPartWithWishedTrait) .. ", traitMarkerIcon: " .. tostring(newMarkerIcon))
+            isSetPartWithWishedTrait          =  fromCheckFunc["isSetPartWithWishedTrait"]
+            isSetPartAndIsValidAndGotTrait    =  fromCheckFunc["isSetPartAndIsValidAndGotTrait"]
+            newMarkerIcon                     =  fromCheckFunc["newMarkerIcon"]
+            --d(">>" .. itemLink .. ", isSetPartWithATrait: " .. tostring(isSetPartAndIsValidAndGotTrait) .. ", isSetPartWithAWishedTrait: " .. tostring(isSetPartWithWishedTrait) .. ", traitMarkerIcon: " .. tostring(newMarkerIcon))
         end
     end
+
     local skipAllOtherChecks = false
     local nonWishedBecauseOfCharacterLevel = false
     --Local settings
@@ -288,13 +308,17 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
     local setTrackerIconIdArray = {}
     --The standard automatic marker icon for the sets
     local setsIconNr = settings.autoMarkSetsIconNr
+    local isMarkedWithAutomaticSetMarkerIcon
+    local isSellProtected
+    local isGearProtected
+    local isSetTrackerAndIsMarkedWithOtherIconAlready
 
---=== Non-Wished set items check for characters below level 50 =========================================================
+    --=== Non-Wished set items check for characters below level 50 =========================================================
     if settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] and settings.autoMarkSetsNonWishedIfCharBelowLevel then
         --Get the actual logged in character level
         local isCharLevelAboveOrEqual = FCOIS.checkNeededLevel("player", 50)
         if not isCharLevelAboveOrEqual then
---d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow")
+            if isDebuggingCase then d("[FCOIS]automaticMarkingSetsAdditionalCheckFunc, charLevelIsBelow") end
             --Check the item's level if it is below level 50
             local itemLevel = GetItemLinkRequiredLevel(itemLink)
             local itemRequiredCP = GetItemLinkRequiredChampionPoints(itemLink)
@@ -307,26 +331,30 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         end
     end
 
---==== SET TRACKER addon integration - START ===========================================================================
+    --==== SET TRACKER addon integration - START ===========================================================================
+    --The items will be marked via the addon "SetTracker"'s function "setLinkMarkState(_itemLink, nState, _ibag, _iindex)"
+    --in file SetTracker.lua, which will call FCOItemSaver's function "FCOIS.otherAddons.SetTracker.updateSetTrackerMarker"
+    --in file FCOIS_OtherAddons.lua as the inventories are scanned!
+    ---> So these automatic checks are done "later" !
     if not skipAllOtherChecks then
 
-        local isSetTrackerAndIsMarkedWithOtherIconAlready = false
-        if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive then
-            --d(">check SetTracker addon")
-            --If the option is enabled to check for all marker icons before checking SetTracker set icons: If the set part is alreay marked with
-            --any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
+        isSetTrackerAndIsMarkedWithOtherIconAlready = false
+        if SetTrack and SetTrack.GetMaxTrackStates and FCOIS.otherAddons.SetTracker.isActive and settings.autoMarkSetTrackerSets then
+            if isDebuggingCase then d(">check SetTracker addon") end
+            --If the option is enabled to check for all marker icons before checking SetTracker set icons:
+            --If the set part is alreay marked with any of the marker icons it shouldn't be marked with another SetTracker set marker icon again
             if settings.autoMarkSetTrackerSetsCheckAllIcons then
-                for iconNr = 1, numFilterIcons, 1 do
+                for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     table.insert(setTrackerIconIdArray, iconNr)
                 end
                 if setTrackerIconIdArray ~= nil and #setTrackerIconIdArray > 0 then
                     isSetTrackerAndIsMarkedWithOtherIconAlready = checkIfItemArrayIsProtected(setTrackerIconIdArray, itemId) or false
                 end
             end
-            --If the option is enabled to check for all SetTracker set icons: If the set part is alreay marked with
-            --any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
+            --If the option is enabled to check for all SetTracker set icons:
+            --If the set part is alreay marked with any of the SetTracker set icons it shouldn't be marked with another set marker icon again.
             --If the option is enabled that the SetTracker marker should not be set if any other marker is already set this will be skipped too!
-            if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetTrackerSets and settings.autoMarkSetsCheckAllSetTrackerIcons then
+            if not isSetTrackerAndIsMarkedWithOtherIconAlready and settings.autoMarkSetsCheckAllSetTrackerIcons then
                 --Set the variable to check other icons
                 checkOtherSetMarkerIcons = true
                 --Reset the variable for the SetTracker icon checks
@@ -337,7 +365,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                     --For each SetTracker tracking state (set) get the appropriate marker icon from FCOIS
                     for i=0, (STtrackingStates-1), 1 do
                         local setTrackerTrackingIcon = settings.setTrackerIndexToFCOISIcon[i]
-                        if setTrackerTrackingIcon ~= nil then
+                        if setTrackerTrackingIcon ~= nil and setTrackerTrackingIcon ~= FCOIS_CON_ICON_NONE then
                             table.insert(setTrackerIconIdArray, setTrackerTrackingIcon)
                         end
                     end
@@ -352,20 +380,20 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Normal set marker icon - BEGIN ==================================================================================
         --Check if the item is marked with the automatic set icon alreay
         --table.insert(iconIdArray, setsIconNr)
-        local isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
+        isMarkedWithAutomaticSetMarkerIcon = FCOIS.checkIfItemIsProtected(setsIconNr, itemId) or false
         --==== Normal set marker icon - END ====================================================================================
 
         --==== Gear marker icons - BEGIN =======================================================================================
         --If the option is enabled to check for all gear set icons: If the set part is alreay marked with
         --any of the gear set icons it shouldn't be marked with another set marker icon again
-        local isGearProtected = false
+        isGearProtected = false
         if settings.autoMarkSetsCheckAllGearIcons then
             --d(">check all gear icons")
             --Set the variable to check other icons
             checkOtherSetMarkerIcons = true
             --Add the gear set icons now
             local iconIsGear = settings.iconIsGear
-            for i=1, numFilterIcons, 1 do
+            for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                 --Check if icon is a gear set icon and if it's enabled
                 if iconIsGear[i] then
                     table.insert(gearIconIdArray, i)
@@ -381,7 +409,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         --==== Sell marker icons - BEGIN =======================================================================================
         --If the option is enabled to check for sell and sell in guild store icons: If the set part is alreay marked with
         --any of them it shouldn't be marked with another set marker icon again
-        local isSellProtected = false
+        isSellProtected = false
         if settings.autoMarkSetsCheckSellIcons and (settings.isIconEnabled[FCOIS_CON_ICON_SELL] or settings.isIconEnabled[FCOIS_CON_ICON_SELL_AT_GUILDSTORE]) then
             --d(">check sell icons")
             --Set the variable to check other icons
@@ -401,7 +429,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
 
         --==== Is item protected check - BEGIN =================================================================================
         --Check other set marker icons too? Or only the normal one
-        --d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tostring(isSetTrackerAndIsMarkedWithOtherIconAlready))
+        if isDebuggingCase then d(">isSetTrackerAndIsMarkedWithOtherIconAlready: " ..tostring(isSetTrackerAndIsMarkedWithOtherIconAlready)) end
         local checkOnlySetMarkerIcon = false
         if checkOtherSetMarkerIcons then
             if iconIdArray ~= nil and #iconIdArray > 0 then
@@ -415,17 +443,17 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         end
         if checkOnlySetMarkerIcon then
             --Only check the automatic sets marker icon
-            isProtected = isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isMarkedWithAutomaticSetMarkerIcon
+            isProtected = (isSetTrackerAndIsMarkedWithOtherIconAlready or isGearProtected or isSellProtected or isMarkedWithAutomaticSetMarkerIcon) or false
         end
         if not isProtected then isProtected = false end
---==== Is item protected check - END ===================================================================================
+        --==== Is item protected check - END ===================================================================================
 
 
     end --if not skipAllOtherChecks then
---==== Trait & non-wished trait checks - BEGIN =========================================================================
+    --==== Trait & non-wished trait checks - BEGIN =========================================================================
     --The item is not marked with any marker icon yet and it's not protected
     --> then check for non wished item traits
---d("> isProtected: " .. tostring(isProtected))
+    if isDebuggingCase then d("> isProtected: " .. tostring(isProtected)) end
     local markWithNonWishedIcon = false
     local markWithNonWishedSellIcon = false
     if isProtected == false or nonWishedBecauseOfCharacterLevel == true then
@@ -437,11 +465,12 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         local nonWishedLevelFound = false
         local nonWishedQualityFound = false
         if (isSetPartWithWishedTrait == false or nonWishedBecauseOfCharacterLevel) and settings.autoMarkSetsNonWished and settings.isIconEnabled[settings.autoMarkSetsNonWishedIconNr] then
-            --d(">non wished item trait check")
+            if isDebuggingCase then d(">non wished item trait check") end
             if not nonWishedBecauseOfCharacterLevel then
                 --Quality, level or botch checks?
-                local doNonWishedQualityCheck   = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
-                local doNonWishedLevelCheck     = (settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
+                local autoMarkSetsNonWishedChecksAllEnabled = settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_ALL
+                local doNonWishedQualityCheck   = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_QUALITY) or false
+                local doNonWishedLevelCheck     = (autoMarkSetsNonWishedChecksAllEnabled or settings.autoMarkSetsNonWishedChecks==FCOIS_CON_NON_WISHED_LEVEL) or false
 
                 --If the item is a s set part "Check the item's level" is activated?
                 if isSetPartAndIsValidAndGotTrait and doNonWishedLevelCheck and settings.autoMarkSetsNonWishedLevel ~= 1 then
@@ -486,7 +515,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                 if isSetPartAndIsValidAndGotTrait and doNonWishedQualityCheck then
                     --Check the item's quality to mark it with the chosen non-wished icon, or the sell icon?
                     if settings.autoMarkSetsNonWishedQuality ~= 1 then
-                        --d(">> non-wished quality check! Non-wished quality: " .. tostring(settings.autoMarkSetsNonWishedQuality))
+                        if isDebuggingCase then d(">> non-wished quality check! Non-wished quality: " .. tostring(settings.autoMarkSetsNonWishedQuality)) end
                         --Check the item's quality now
                         local itemQuality = FCOIS.GetItemQuality(p_itemData.bagId, p_itemData.slotIndex)
                         if itemQuality ~= false then
@@ -507,24 +536,29 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                         or (doNonWishedLevelCheck and not doNonWishedQualityCheck and nonWishedLevelFound and not nonWishedQualityFound)  -- Level
                         or (not doNonWishedLevelCheck and doNonWishedQualityCheck and not nonWishedLevelFound and nonWishedQualityFound) -- Quality
                 then
+                    if isDebuggingCase then d(">NonWishedCheck: 1") end
                     markWithNonWishedIcon       = true
                     markWithNonWishedSellIcon   = false
                 else
+                    if isDebuggingCase then d(">NonWishedCheck: 2") end
                     markWithNonWishedIcon       = false
                     markWithNonWishedSellIcon   = false
                     if settings.autoMarkSetsNonWishedSellOthers and settings.isIconEnabled[FCOIS_CON_ICON_SELL] then
+                        if isDebuggingCase then d(">NonWishedCheck: 2a") end
                         --Don't do quality checks -> Mark with the non-wished icon
                         markWithNonWishedIcon       = false
                         markWithNonWishedSellIcon   = true
                     end
                 end
             else
+                if isDebuggingCase then d(">NonWishedCheck: 3") end
                 --No other checks were needed and we need to mark the setItem with the non-wished marker icon now
                 --as the character is below level 50 and the setting to mark then as non-wished is enabled
                 markWithNonWishedIcon = true
             end --if not nonWishedBecauseOfCharacterLevel then
             --Mark with the non-wished icon now?
             if markWithNonWishedIcon or markWithNonWishedSellIcon then
+                if isDebuggingCase then d("<<<Marking with NonWished(Sell)Icon now!") end
                 local nonWishedMarkerIcon
                 if markWithNonWishedIcon then
                     nonWishedMarkerIcon = settings.autoMarkSetsNonWishedIconNr
@@ -561,12 +595,12 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
         local markWithTraitIcon = false
         if isSetPartWithWishedTrait and not markWithNonWishedIcon and not markWithNonWishedSellIcon
                 and (not isMarkedWithAutomaticSetMarkerIcon or (isMarkedWithAutomaticSetMarkerIcon and settings.autoMarkSetsWithTraitIfAutoSetMarked)) then
-            --d(">>>Trait marking checks start")
+            if isDebuggingCase then d(">>>Trait marking checks start") end
             --Check if any other marker icon can be set
             if settings.autoMarkSetsWithTraitCheckAllIcons and not isMarkedWithAutomaticSetMarkerIcon then
                 local isMarkedWithAnyOtherIcon = false
                 local allMarkerIconsArray = {}
-                for iconNr = 1, numFilterIcons, 1 do
+                for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                     if iconNr ~= setsIconNr then
                         table.insert(allMarkerIconsArray, iconNr)
                     end
@@ -593,7 +627,7 @@ local function automaticMarkingSetsAdditionalCheckFunc(p_itemData, p_checkFuncRe
                 end
             end
         end
-        --d(">>>markWithTraitIcon: " .. tostring(markWithTraitIcon))
+        if isDebuggingCase then d(">>>markWithTraitIcon: " .. tostring(markWithTraitIcon)) end
         --if newMarkerIcon == nil then
         --    d(">markWithTraitIcon " .. tostring(markWithTraitIcon) .. ": markWithNonWishedIcon " .. tostring(markWithNonWishedIcon) .. ", markWithNonWishedSellIcon " .. tostring(markWithNonWishedSellIcon) ..
         --        ", isMarkedWithAutomaticSetMarkerIcon " .. tostring(isMarkedWithAutomaticSetMarkerIcon) .. ", settings.autoMarkSetsWithTraitIfAutoSetMarked " .. tostring(settings.autoMarkSetsWithTraitIfAutoSetMarked))
@@ -752,7 +786,7 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
                 if toDos.checkIfAnyIconIsMarkedAlready ~= nil and toDos.checkIfAnyIconIsMarkedAlready == true then
                     local iconIdArray = {}
                     local doAddIconNow = false
-                    for iconNr = 1, numFilterIcons, 1 do
+                    for iconNr = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         doAddIconNow = true
                         if iconIsMarkedAllreadyAllowed and iconNr == toDos.icon then doAddIconNow = false end
                         if doAddIconNow then
@@ -921,15 +955,17 @@ function FCOIS.scanInventoryItemForAutomaticMarks(bag, slot, scanType, toDos, do
 end -- Single item scan function scanInventoryItemForAutomaticMarks(bag, slot, scanType)
 local scanInventoryItemForAutomaticMarks = FCOIS.scanInventoryItemForAutomaticMarks
 
---Function to check if the addtional checkFunction needs to be called for a call type
+--Function to check if the addtional checkFunction at the automatic item marker checks needs to be "forced" called for a call type
+--even if the normal checkFunc already returned a valid result/marker icon change
 local function getAdditionalCheckFuncForce(callType)
 --d("[FCOIS]getAdditionalCheckFuncForce, callType: " .. tostring(callType))
     if callType == nil then return false end
     local addCheckFuncNeedsToBeCalled = false
 
-    if callType == "sets" then
-        addCheckFuncNeedsToBeCalled = true
-    end
+    local callTypesToForceCheck = {
+        ["sets"]    = true,
+    }
+    addCheckFuncNeedsToBeCalled = callTypesToForceCheck[callType] or false
     return addCheckFuncNeedsToBeCalled
 end
 
@@ -1114,7 +1150,7 @@ function FCOIS.scanInventoryItemsForAutomaticMarks(bag, slot, scanType, updateIn
             checkOtherAddon		= nil,
             resultOtherAddon   	= nil,
             resultNotOtherAddon	= nil,
-            icon				=           settings.autoMarkSetsIconNr,
+            icon				= settings.autoMarkSetsIconNr,
             iconIsMarkedAllreadyAllowed = true,
             checkIfAnyIconIsMarkedAlready = settings.autoMarkSetsCheckAllIcons,
             checkFunc			= automaticMarkingSetsCheckFunc,
@@ -1373,18 +1409,23 @@ end
 --Scan the inventory for ZOs locked items and transfer them to FCOIS marker icons
 function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
     --Only run if the ZOs build in marker functions are disabled!
-    if FCOIS.settingsVars.settings.useZOsLockFunctions then return false end
+    if FCOIS.settingsVars.settings.useZOsLockFunctions == true then return false end
     allInventories = allInventories or false
     if houseBankBagId ~= nil then
         allInventories = false
-        allInventories = false
     end
+    local debug = FCOIS.settingsVars.settings.debug
 
     --Only scan if not already scanning
-    if FCOIS.preventerVars.gScanningInv then return false end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItemsAndTransfer]","Start ALL, allInventories: " ..tostring(allInventories), false) end
+    if FCOIS.preventerVars.gScanningInv == true then return false end
+    if debug == true then
+        FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer","Start ALL, allInventories: " ..tostring(allInventories), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+    else
+        d("[FCOIS]scan inventories for ZOs locked items: START")
+    end
     local atLeastOneZOsMarkedFound = false
     local allowedBagTypes = {}
+    local allowedBagTypesCountMigrated = {}
     if allInventories then
         --Scan all the inventories of the player (bank, bag, guild bank, craftbag, etc.)
         allowedBagTypes = {
@@ -1402,6 +1443,15 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
                 allowedBagTypes[BAG_SUBSCRIBER_BANK] = true
             end
         end
+        --Add house bank bagIds if we are in any of our houses
+        local isInHouse = (FCOIS.checkIfOwningHouse() == true and FCOIS.checkIfInHouse() == true) or false
+        if isInHouse == true then
+            for p_houseBankBagId = BAG_HOUSE_BANK_ONE, BAG_HOUSE_BANK_TEN, 1 do
+                if IsHouseBankBag(p_houseBankBagId) == true then
+                    allowedBagTypes[p_houseBankBagId] = true
+                end
+            end
+        end
 
     else
         if houseBankBagId ~= nil and IsHouseBankBag(houseBankBagId) then
@@ -1414,23 +1464,66 @@ function FCOIS.scanInventoriesForZOsLockedItems(allInventories, houseBankBagId)
             }
         end
     end
+    --Check if LiBDebugLogger and the DebugLogViewer are active. Show their window/quicklot (depending on it's settings)
+    --or show the chat instead
+    FCOIS.checkAndShowDebugOutputWindow()
+
     --Scan every item in the bag
+    local itemDelay = 0
+    local countItemsScanned = 0
     for bagType, allowed in pairs(allowedBagTypes) do
-        if allowed then
-            --local bagCache = SHARED_INVENTORY:GenerateFullSlotData(nil, bagType)
-            local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
-            local foundAndTransferedOne = false
-            for _, data in pairs(bagCache) do
-                foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
-                if foundAndTransferedOne then
-                    atLeastOneZOsMarkedFound = true
+        zo_callLater(function()
+            if allowed then
+                allowedBagTypesCountMigrated[bagType] = 0
+                zo_callLater(function()
+                    if debug == true then
+                        FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer",">Scanning bag ID: " ..tostring(bagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+                    else
+                        d(">Scanning bag ID: " ..tostring(bagType))
+                    end
+                    local bagCache = SHARED_INVENTORY:GetOrCreateBagCache(bagType)
+                    local foundAndTransferedOne = false
+                    if bagCache and #bagCache > 0 then
+                        for _, data in pairs(bagCache) do
+                            --Create batches of 50 items and then wait so the server won't kick us because of message spam
+                            --Delay the next scanned package of 50 items by 250 milliseconds
+                            zo_callLater(function()
+                                foundAndTransferedOne = FCOIS.scanInventoriesForZOsLockedItemsAndTransfer(data.bagId, data.slotIndex)
+                                countItemsScanned = countItemsScanned + 1
+                                --At each 100 items: Increase the delay by a half second
+                                if countItemsScanned % 50 == 0 then
+                                    itemDelay = itemDelay + 250
+                                end
+                                --Any item was changed?
+                                if foundAndTransferedOne == true then
+                                    allowedBagTypesCountMigrated[bagType] = allowedBagTypesCountMigrated[bagType] + 1
+                                    atLeastOneZOsMarkedFound = true
+                                end
+                            end, itemDelay)
+                        end
+                    end
+                end, itemDelay)
+            end
+        end, itemDelay)
+    end
+    --Update the inventories
+    zo_callLater(function()
+        local countItemsMigrated = 0
+        if atLeastOneZOsMarkedFound == true then
+            FCOIS.FilterBasics(true)
+            for bagType, lCountMigratedAtBagType in pairs(allowedBagTypesCountMigrated) do
+                countItemsMigrated = countItemsMigrated + lCountMigratedAtBagType
+                if debug == true then
+                    FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", ">migrated at the bag "..tostring(bagType)..": " ..tostring(lCountMigratedAtBagType), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+                else
+                    d(">migrated at the bag "..tostring(bagType)..": " ..tostring(lCountMigratedAtBagType))
                 end
             end
         end
-    end
-    --Update the inventories
-    if atLeastOneZOsMarkedFound == true then
-        FCOIS.FilterBasics(true)
-    end
-    if FCOIS.settingsVars.settings.debug then FCOIS.debugMessage( "[scanInventoriesForZOsLockedItems]", "End, allInventories: " ..tostring(allInventories), false) end
+        if debug == true then
+            FCOIS.debugMessage("scanInventoriesForZOsLockedItemsAndTransfer", "End, allInventories: " ..tostring(allInventories) .. ", migrated/scanned total: " ..tostring(countItemsMigrated) .."/"..tostring(countItemsScanned), false, FCOIS_DEBUG_DEPTH_NORMAL, true)
+        else
+            d("[FCOIS]scan inventories for ZOs locked items: FINISHED - migrated/scanned total: " ..tostring(countItemsMigrated) .."/"..tostring(countItemsScanned))
+        end
+    end, itemDelay + 2000)
 end

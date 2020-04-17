@@ -249,11 +249,11 @@ function FCOIS.SignItemId(itemId, allowedItemType, onlySign, addonName)
             return FCOIS.checkItemId(itemId, addonName)
         end
     end
-    --Only sign the itemId if it is a number
-    if type(itemId) == "number" then
+    --Only sign the itemId if it is a number and if it's a positive value (esle it was signed already!)
+    if itemId and type(itemId) == "number" and itemId > 0 then
         local SIGNED_INT_MAX = 2^32 / 2 - 1
         local INT_MAX 		 = 2^32
-        if(itemId and itemId > SIGNED_INT_MAX) then
+        if itemId > SIGNED_INT_MAX then
             itemId = itemId - INT_MAX
         end
     end
@@ -1222,6 +1222,17 @@ end
 --======================================================================================================================
 -- Get functions
 --======================================================================================================================
+--Get the current scene and scene name
+--If no scene_manager is given or no scene can be determined the dummy scene FCOIS will be returned (table containing only a name)
+function FCOIS.getCurrentSceneInfo()
+    if not SCENE_MANAGER then return FCOIS.dummyScene, "" end
+    local currentScene = SCENE_MANAGER:GetCurrentScene()
+    local currentSceneName = ""
+    if not currentScene then currentScene = FCOIS.dummyScene end
+    currentSceneName = currentScene.name
+    return currentScene, currentSceneName
+end
+
 --Get the effective level of a unitTag and check if it's above or equals a specified "needed level".
 --Returns boolean true if level is above or equal the parameter neededLevel
 --Returns boolean false if level is below the parameter neededLevel
@@ -1293,7 +1304,7 @@ function FCOIS.setItemIsJunk(bagId, slotIndex, isJunk)
     if bagId == nil or slotIndex == nil then return false end
     isJunk = isJunk or false
     --Mark as junk?
-    if isJunk then
+    if isJunk == true then
         --Are there any marker icons on the item?
         local anyMarkerIconSetOnItemToJunk, markerIconsOnItemToJunk = FCOIS.IsMarked(bagId, slotIndex, -1)
         if anyMarkerIconSetOnItemToJunk then
@@ -2028,4 +2039,27 @@ function FCOIS.JunkMarkedItems(markerIconsMarkedOnItems, bagId)
         d(string.format(FCOIS.preChatVars.preChatTextGreen .. locVarJunkedItemCount, tostring(junkedItemCount)))
     end
     return retVar
+end
+
+--Get the inventoryType by help of the LibFilters filterPanelId
+function FCOIS.GetInventoryTypeByFilterPanel(p_filterPanelId)
+    p_filterPanelId = p_filterPanelId or FCOIS.gFilterWhere
+    if p_filterPanelId == nil then return nil end
+    local inventoryType
+    local mappingVars = FCOIS.mappingVars
+    local libFiltersPanelIdToCraftingPanelInventory = mappingVars.libFiltersPanelIdToCraftingPanelInventory
+    local libFiltersPanelIdToNormalInventory = mappingVars.libFiltersPanelIdToInventory
+
+    --Is the craftbag active and additional addons like CraftBagExtended show the craftbag at the bank or mail panel?
+    if FCOIS.checkIfCBEorAGSActive(FCOIS.gFilterWhereParent, true) and INVENTORY_CRAFT_BAG and not ctrlVars.CRAFTBAG:IsHidden() then
+        inventoryType = INVENTORY_CRAFT_BAG
+    else
+        --Is the filterpanelId a crafting table?
+        inventoryType = libFiltersPanelIdToCraftingPanelInventory[p_filterPanelId] or nil
+        --Else: Is it a normal panel
+        if inventoryType == nil then
+            inventoryType = libFiltersPanelIdToNormalInventory[p_filterPanelId] or nil
+        end
+    end
+    return inventoryType
 end

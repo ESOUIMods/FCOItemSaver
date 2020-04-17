@@ -4,7 +4,41 @@ local FCOIS = FCOIS
 --Do not go on if libraries are not loaded properly
 if not FCOIS.libsLoadedProperly then return end
 
+local addonVars = FCOIS.addonVars
 local numFilterIcons = FCOIS.numVars.gFCONumFilterIcons
+local checkIfFCOISSettingsWereLoaded = FCOIS.checkIfFCOISSettingsWereLoaded
+
+-- =====================================================================================================================
+--  Other AddOns helper functions
+-- =====================================================================================================================
+
+-- GRID LIST: https://www.esoui.com/downloads/info2341-GridList.html ---
+--Get the GridList inventoryList
+local GridList_MODE_LIST, GridList_MODE_GRID = 1, 3
+local function GridList_GetMode(inventoryType)
+    if not inventoryType then return nil end
+    if not GridList or not GridList.GetList then return end
+    local control = GridList.GetList(inventoryType)
+    if not control then return nil end
+    local mode = control.mode
+    return mode
+end
+
+local function GridList_IsSupportedInventory(inventoryType)
+    if not inventoryType then return nil end
+    if not GridList then return end
+    local list = GridList.List
+    if not list then return end
+    for _, invToCompare in ipairs(list) do
+        if invToCompare == inventoryType then return true  end
+    end
+    return false
+end
+
+
+-- =====================================================================================================================
+--  Marker icon helper functions
+-- =====================================================================================================================
 
 -- =====================================================================================================================
 --  Marker control / textures functions
@@ -39,7 +73,7 @@ local function updateAlreadyBoundTexture(parent, pHideControl)
             local setPartAlreadyBoundTexture
             setPartAlreadyBoundTexture = WINDOW_MANAGER:GetControlByName(setPartAlreadyBoundName, "")
             if setPartAlreadyBoundTexture == nil then
-                setPartAlreadyBoundTexture= WINDOW_MANAGER:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
+                setPartAlreadyBoundTexture = WINDOW_MANAGER:CreateControl(setPartAlreadyBoundName, parentsImage, CT_TEXTURE)
             end
             if setPartAlreadyBoundTexture ~= nil then
                 --d(">texture created")
@@ -65,11 +99,12 @@ end
 function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
     --No parent? Abort here
     if parent == nil then return nil end
-    --d(">>FCOIS.CreateMarkerControl: " .. tostring(parent:GetName()))
+--d(">>FCOIS.CreateMarkerControl: " .. tostring(parent:GetName()))
     pArmorTypeIcon = pArmorTypeIcon or false
     pHideControl = pHideControl or false
 
-    local InventoryGridViewActivated = false
+    local InventoryGridViewActivated = (FCOIS.otherAddons.inventoryGridViewActive or InventoryGridView ~= nil) or false
+    local GridListActivated          = GridList ~= nil
 
     --Preset the variable for control creation with false, if it is not given
     pCreateControlIfNotThere	= pCreateControlIfNotThere or false
@@ -98,12 +133,11 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
         end
         if doHide == nil then doHide = false end
 
-        --Remove the sell icon and price if Inventory gridview is active
+        --Remove the sell icon and price if Inventory Grid View or Grid List addons are active
         if(parent:GetWidth() - parent:GetHeight() < 5) then
             if(parent:GetNamedChild("SellPrice")) then
                 parent:GetNamedChild("SellPrice"):SetHidden(true)
             end
-            InventoryGridViewActivated = true
         end
 
         --It does not exist yet, so create it now
@@ -123,26 +157,74 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
             control:SetHidden(doHide)
             --Control should be shown?
             if not doHide then
-                control:SetDimensions(pWidth, pHeight)
                 control:SetTexture(pTexture)
                 local iconSettingsColor = settings.icon[controlId].color
                 control:SetColor(iconSettingsColor.r, iconSettingsColor.g, iconSettingsColor.b, iconSettingsColor.a)
                 --Marker was created/updated for the character equipment slots?
+                local gridIsEnabled = false
                 if pIsEquipmentSlot == true then
                     control:ClearAnchors()
+                    control:SetDimensions(pWidth, pHeight)
                     --Move the marker controls of equipment slots according to settings
                     --control:SetAnchor(BOTTOMLEFT, parent, BOTTOMLEFT, -6, 5)
                     local iconPositionCharacter = settings.iconPositionCharacter
                     control:SetAnchor(BOTTOMLEFT, parent, BOTTOMLEFT, iconPositionCharacter.x, iconPositionCharacter.y)
                     control:SetDrawTier(DT_HIGH)
                 else
-                    if InventoryGridViewActivated == true then
-                        control:SetDrawTier(DT_HIGH)
-                        control:ClearAnchors()
-                        control:SetAnchor(CENTER, parent, BOTTOMLEFT, 12, -12)
+                    control:SetDrawTier(DT_HIGH)
+                    control:ClearAnchors()
+
+                    --Is one of the grid addons enabled?
+                    local gridListOffSetLeft
+                    local gridListOffSetTop
+                    if InventoryGridViewActivated == true or GridListActivated == true then
+                        if InventoryGridViewActivated == true then
+                            gridIsEnabled = true
+                        else
+                            --Only if GridList active: Check if it's GridMode is currently showing the grid or not
+                            if GridListActivated == true then
+                                --Is the GridList "GRID" view enabled?
+                                local filterPanelId = FCOIS.gFilterWhere
+                                --Is the FCOIS LAM settings menu curerntly open and we show the preview of the inventory?
+                                if FCOIS.preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon == true then
+                                    filterPanelId = LF_INVENTORY
+                                end
+                                if filterPanelId then
+                                    local inventoryType = FCOIS.GetInventoryTypeByFilterPanel(filterPanelId)
+                                    if inventoryType ~= nil then
+                                        --Is the inventory type a supported GridList inventory type?
+                                        local isSupportedGridListInv = GridList_IsSupportedInventory(inventoryType)
+                                        if isSupportedGridListInv == true then
+                                            local gridViewModeOfInventoryType = GridList_GetMode(inventoryType)
+                                            if gridViewModeOfInventoryType and gridViewModeOfInventoryType == GridList_MODE_GRID then
+                                                --GridList grid is enabled
+                                                gridIsEnabled = true
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    --The grid of one the grid addons is currently enabled?
+                    if gridIsEnabled == true then
+                        gridListOffSetLeft = settings.markerIconOffset["GridList"].x
+                        gridListOffSetTop = settings.markerIconOffset["GridList"].y
+                        local scale = settings.markerIconOffset["GridList"].scale
+                        if scale <= 0 then scale = 1 end
+                        if scale > 100 then scale = 100 end
+                        if pWidth > 0 and pHeight > 0 then
+                            local newWidth = (pWidth / 100) * scale
+                            local newHeight = (pHeight / 100) * scale
+                            if scale == 100 or (newWidth ~= pWidth or newHeight ~= pHeight) then
+                                control:SetDimensions(newWidth, newHeight)
+                            end
+                        end
+                        control:SetAnchor(CENTER, parent, BOTTOMLEFT, gridListOffSetLeft, gridListOffSetTop)
                     else
-                        control:SetDrawTier(DT_HIGH)
-                        control:ClearAnchors()
+                        --Normal icons without InventoryGridView or GridList grid
+                        control:SetDimensions(pWidth, pHeight)
                         --Get the currently active filter panel ID and map the appropriate inventory for the icon X axis offset
                         local filterPanelIdToIconOffset = FCOIS.mappingVars.filterPanelIdToIconOffset
                         local iconPosition = settings.iconPosition
@@ -153,6 +235,7 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                         local totalOffSetTop = iconOffset.y + iconOffsetDefinedAtMarkerIcon["top"]
                         control:SetAnchor(LEFT, parent, LEFT, totalOffSetLeft, totalOffSetTop)
                     end
+
                     --Add the OnMouseDown event handler to open the context menu of the inventory if right clicking on a texture control
                     if control:GetHandler("OnMouseUp") == nil then
                         control:SetHandler("OnMouseUp", function(self, mouseButton, upInside, ctrlKey, altKey, shiftKey, ...)
@@ -165,7 +248,7 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
                                     end
                                 end
                             end
-                        end)
+                        end, addonVars.gAddonName)
                     end
                 end
             end  -- if not doHide then
@@ -182,6 +265,9 @@ function FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture,
 end
 
 --Create the textures inside inventories etc.
+--The inventories of the crafting tables are build inside function /src/FCOIS_Hook.lua
+--> See function OnScrollListRowSetupCallback(rowControl, data)
+--> for e.g. SecurePostHook(ctrlVars.DECONSTRUCTION.dataTypes[1], "setupCallback", OnScrollListRowSetupCallback)
 function FCOIS.CreateTextures(whichTextures)
 
     local doCreateMarkerControl = false
@@ -205,9 +291,11 @@ function FCOIS.CreateTextures(whichTextures)
                 function(rowControl, slot)
                     hookedFunctions(rowControl, slot)
                     --Do not execute if horse is changed
-                    if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                    --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                    local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                    if currentScene ~= STABLES_SCENE then
                         -- for all filters: Create/Update the icons
-                        for i=1, numFilterIcons, 1 do
+                        for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --FCOIS.CreateMarkerControl(parent, controlId, pWidth, pHeight, pTexture, pIsEquipmentSlot, pCreateControlIfNotThere, pUpdateAllEquipmentTooltips, pArmorTypeIcon, pHideControl)
                             FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                         end
@@ -220,7 +308,7 @@ function FCOIS.CreateTextures(whichTextures)
             end
         end
     end
-    --Repair list
+     --Repair list
     if (whichTextures == 2 or doCreateAllTextures) then
         --Create textures in repair window
         local listView = FCOIS.ZOControlVars.REPAIR_LIST
@@ -232,9 +320,11 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -262,9 +352,11 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -285,9 +377,11 @@ function FCOIS.CreateTextures(whichTextures)
                 hookedFunctions(rowControl, slot)
 
                 --Do not execute if horse is changed
-                if SCENE_MANAGER:GetCurrentScene() ~= STABLES_SCENE then
+                --The current game's SCENE and name (used for determining bank/guild bank deposit)
+                local currentScene, _ = FCOIS.getCurrentSceneInfo()
+                if currentScene ~= STABLES_SCENE then
                     -- for all filters: Create/Update the icons
-                    for i=1, numFilterIcons, 1 do
+                    for i=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                         FCOIS.CreateMarkerControl(rowControl, i, iconSettings[i].size, iconSettings[i].size, markerTextureVars[iconSettings[i].texture], false, doCreateMarkerControl)
                     end
                     --Add additional FCO point to the dataEntry.data slot
@@ -351,6 +445,100 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
     FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem = false
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
+    --Get the item's itemInstanceId (FCOIS style) and check if there are any marker icons saved in the undo list
+    local fcoisItemInstanceId = FCOIS.MyGetItemInstanceId(rowControl, true)
+    local itemLink = GetItemLink(bagId, slotIndex)
+--d(">item: " .. itemLink .. ", itemInstanceId FCOIS: " ..tostring(fcoisItemInstanceId))
+    if fcoisItemInstanceId ~= nil then
+        local alreadyRemovedMarkersForThatBagAndItem = (lastMarkedIcons ~= nil and lastMarkedIcons[fcoisItemInstanceId]) or nil
+        if alreadyRemovedMarkersForThatBagAndItem ~= nil then
+
+            --Marker icons were removed already for this item in this bag, so restore them now
+            --Restore saved markers for the current item?
+            local loc_counter = 1
+            for iconId, iconIsMarked in pairs(alreadyRemovedMarkersForThatBagAndItem) do
+                --Reset all markers
+                --Refresh the control now to update the set marker icons?
+                local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
+    --d(">iconId: " ..tostring(iconId) .. ", isMarked: " .. tostring(iconIsMarked) .. ", refreshNow: " ..tostring(refreshNow))
+                --Set global preventer variable so no other marker icons will be set/removed during the restore
+                FCOIS.preventerVars.gRestoringMarkerIcons = true
+                --FCOIS.MarkItem(bagId, slotIndex, iconId, iconIsMarked, refreshNow)
+                --FCOIS.preventerVars.markerIconChangedManually = true
+                FCOIS.MarkItemByItemInstanceId(fcoisItemInstanceId, iconId, iconIsMarked, itemLink, nil, nil, refreshNow)
+                --Reset the global preventer variable
+                FCOIS.preventerVars.gRestoringMarkerIcons = false
+                loc_counter = loc_counter + 1
+            end
+            --Reset the last saved marker array for the current item
+            FCOIS.lastMarkedIcons[fcoisItemInstanceId] = nil
+            if loc_counter > 1 then
+                --Refresh the inventory list now to hide removed marker icons
+                FCOIS.FilterBasics(false)
+                --Check if the item needs to be removed from a craft slot or the guild store sell tab now
+                FCOIS.IsItemProtectedAtASlotNow(bagId, slotIndex, false, true)
+                --Check if the item mark removed other marks and if a row within another addon (like Inventory Insight) needs to be updated
+                FCOIS.checkIfInventoryRowOfExternalAddonNeedsMarkerIconsUpdate(rowControl, iconId)
+            end
+
+        else
+
+            --Marker icons were not removed yet for this item in this bag.
+            --So remove them now
+            --Clear all markers of current item
+            --local itemInstanceId = FCOIS.MyGetItemInstanceIdNoControl(bagId, slotIndex)
+            --Return false for marked icons, where the icon id is disabled in the settings
+            FCOIS.preventerVars.doFalseOverride = true
+            --local _, currentMarkedIcons = FCOIS.IsMarked(bagId, slotIndex, -1)
+            local _, currentMarkedIcons = FCOIS.IsMarkedByItemInstanceId(fcoisItemInstanceId, -1, nil, nil)
+            --Reset to normal return values for marked & en-/disabled icons now
+            FCOIS.preventerVars.doFalseOverride = false
+            --For each marked icon of the currently improved item:
+            --Set the icons/markers of the previous item again
+            if currentMarkedIcons and #currentMarkedIcons > 0 then
+                --Build the backup array with normal marked icons now
+                --local _, currentMarkedIconsUnchanged = FCOIS.IsMarked(bagId, slotIndex, -1)
+                local currentMarkedIconsUnchanged = ZO_DeepTableCopy(currentMarkedIcons)
+                --Create the arrays if any marker icon is set currently
+                FCOIS.lastMarkedIcons = FCOIS.lastMarkedIcons or {}
+                FCOIS.lastMarkedIcons[fcoisItemInstanceId] = FCOIS.lastMarkedIcons[fcoisItemInstanceId] or {}
+                --Counter vars
+                local loc_counter = 1
+                local loc_marked_counter = 0
+                local iconIdsToBackup = {}
+                --Loop over each of the marker icons and remove them
+                for iconId, iconIsMarked in pairs(currentMarkedIcons) do
+    --d(">iconId: " .. tostring(iconId) .. ", loc_counter: " .. tostring(loc_counter))
+                    --Only go on if item is marked or is the last marker (to update the inventory afterwards)
+                    if iconIsMarked == true then
+                        loc_marked_counter = loc_marked_counter + 1
+                        table.insert(iconIdsToBackup, iconId)
+                    end
+                    loc_counter = loc_counter + 1
+                end
+                --Only save the last active marker icons if any marker icon was removed
+                if loc_marked_counter > 0 then
+                    --Refresh the control now to update the cleared marker icons?
+                    local refreshNow = isCharacterShown or FCOIS.preventerVars.gOverrideInvUpdateAfterMarkItem
+                    --Remove marker icon
+--d(">removing marker icon: " .. tostring(iconId))
+                    --Set global preventer variable so no other marker icons will be set/removed during the clear
+                    FCOIS.preventerVars.gClearingMarkerIcons = true
+                    --FCOIS.MarkItem(bagId, slotIndex, iconId, false, refreshNow)
+                    FCOIS.MarkItemByItemInstanceId(fcoisItemInstanceId, iconIdsToBackup, false, itemLink, nil, nil, refreshNow)
+                    --Reset the global preventer variable
+                    FCOIS.preventerVars.gClearingMarkerIcons = false
+                    --Save the previous state of the marker icons on the item
+                    FCOIS.lastMarkedIcons[fcoisItemInstanceId] = currentMarkedIconsUnchanged
+                    --Refresh the inventory list now to hide removed marker icons
+                    FCOIS.FilterBasics(false)
+                end
+            end
+
+        end
+    end
+
+    --[[ OLD- Use Bag and SlotId- Fails if the slotIndices change in the bags!
     --Restore temporarily saved marker icons
     if lastMarkedIcons ~= nil and lastMarkedIcons[bagId] ~= nil and lastMarkedIcons[bagId][slotIndex] ~= nil then
 --d("restore - bag: " .. bagId .. ", slotIndex: " .. slotIndex .. " " .. GetItemLink(bagId, slotIndex))
@@ -428,6 +616,7 @@ function FCOIS.ClearOrRestoreAllMarkers(rowControl, bagId, slotIndex)
             end
         end
     end
+    ]]
     FCOIS.preventerVars.gRestoringMarkerIcons = false
     FCOIS.preventerVars.gClearingMarkerIcons = false
 end
@@ -453,8 +642,8 @@ function FCOIS.checkIfClearOrRestoreAllMarkers(clickedRow, shiftKey, upInside, m
 --d("[FCOIS]checkIfClearOrRestoreAllMarkers - refreshPopupDialog now")
                 FCOIS.refreshPopupDialogButtons(clickedRow, false)
             end
-            --Is the character sshown, then disable the context menu "hide" variable again as the order of hooks is not
-            --the same like in the inventory and the context menu will be hidden twice  in a row else!
+            --Is the character shown, then disable the context menu "hide" variable again as the order of hooks is not
+            --the same like in the inventory and the context menu will be hidden twice in a row else!
             local isCharacter = (bagId == BAG_WORN) and not FCOIS.ZOControlVars.CHARACTER:IsHidden()
             if isCharacter then
                 FCOIS.preventerVars.dontShowInvContextMenu = false
@@ -606,9 +795,11 @@ function FCOIS.RemoveEmptyWeaponEquipmentMarkers(delay)
                     --Check if the equipment control got something equipped or it's a backup weapon slot containing a 2hd weapon
                     if equipmentControl.stackCount == 0 or twoHandedWeaponOffHand then
                         --Remove the markers for the filter icons at the equipment slot
-                        for j=1, numFilterIcons, 1 do
+                        local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
+                        local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
+                        for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
                             --Last parameter = doHide (true)
-                            FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, false, false, false, true)
+                            FCOIS.CreateMarkerControl(equipmentControl, j, width, height, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, false, false, false, true)
                         end
                     end
                 end
@@ -629,18 +820,20 @@ function FCOIS.RefreshEquipmentControl(equipmentControl, doCreateMarkerControl, 
 
     --is the equipment control already given?
     if equipmentControl ~= nil then
+        local width = settings.iconSizeCharacter or equipVars.gEquipmentIconWidth
+        local height = settings.iconSizeCharacter or equipVars.gEquipmentIconHeight
         --Check all marker ids?
         if p_markId == nil or p_markId == 0 then
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: ALL", true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the markers for the filter icons at the equipment slot
-            for j=1, numFilterIcons, 1 do
-                FCOIS.CreateMarkerControl(equipmentControl, j, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
+            for j=FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
+                FCOIS.CreateMarkerControl(equipmentControl, j, width, height, texVars.MARKER_TEXTURES[settings.icon[j].texture], true, doCreateMarkerControl, false)
             end
             --Only check a specific marker id
         else
             if settings.debug then FCOIS.debugMessage( "[RefreshEquipmentControl]","Control: " .. equipmentControl:GetName() .. ", Create: " .. tostring(doCreateMarkerControl) .. ", MarkId: " .. tostring(p_markId), true, FCOIS_DEBUG_DEPTH_VERY_DETAILED) end
             --Add/Update the marker p_markId for the filter icons at the equipment slot
-            FCOIS.CreateMarkerControl(equipmentControl, p_markId, equipVars.gEquipmentIconWidth, equipVars.gEquipmentIconHeight, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, true)
+            FCOIS.CreateMarkerControl(equipmentControl, p_markId, width, height, texVars.MARKER_TEXTURES[settings.icon[p_markId].texture], true, doCreateMarkerControl, true)
         end
 
         --Are we chaning equipped weapons? Update the markers and remove 2hd weapon markers

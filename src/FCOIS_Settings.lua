@@ -436,7 +436,7 @@ end
 
 
 --Transfer the non-unique/unique to unique/non-unique marker icons at the items
---> Button in the FCOIS_SettingsMenu.lua, "General settings"
+--> Started by the button in the FCOIS_SettingsMenu.lua, "General settings"
 local function scanBagsAndTransferMarkerIcon(toUnique)
     if toUnique == nil then return false end
     --Check the bag
@@ -487,7 +487,7 @@ local function scanBagsAndTransferMarkerIcon(toUnique)
             if itemId ~= nil and itemIdNew ~= nil then
                 local increaseNumMigratedItems = true
                 --Check if the item is marked with any icon
-                for iconId = 1, FCOIS.numVars.gFCONumFilterIcons, 1 do
+                for iconId = FCOIS_CON_ICON_LOCK, FCOIS.numVars.gFCONumFilterIcons, 1 do
                     local isMarked = FCOIS.markedItems[iconId][itemId]
                     if isMarked == nil then isMarked = false end
                     --Is the icon marked?
@@ -515,7 +515,7 @@ end
 --Migrate the marker icons from the non-unique ItemInstanceIds to the uniqueIds
 function FCOIS.migrateItemInstanceIdMarkersToUniqueIdMarkers()
     --Are the unique IDs enabled?
-    if FCOIS.settingsVars.settings.useUniqueIds then
+    if FCOIS.settingsVars.settings.useUniqueIds == true then
         scanBagsAndTransferMarkerIcon(true)
     end
 end
@@ -559,11 +559,11 @@ function FCOIS.afterSettings()
     if settings.addonFCOISChangedDynIconMaxUsableSlider == nil then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = true
     end
+    local maxUsableDynIconNr = 0
     if settings.addonFCOISChangedDynIconMaxUsableSlider then
         --Check if the user got more dyn. icons enabled as the current value of the usable dyn. icons is set (standard value is: 10)
         --Loop over iconsEnabled in settings and check if the number of dynIcons is > then the currently total usable number
         --local firstDynIconNr = FCOIS.numVars.gFCONumNonDynamicAndGearIcons + 1 --Start at icon# 13 = Dyn. icon #1
-        local maxUsableDynIconNr = 0
         for dynIconNr, isEnabled in ipairs(settings.isIconEnabled) do
             if isEnabled then
                 maxUsableDynIconNr = icon2Dynamic[dynIconNr]
@@ -583,6 +583,15 @@ function FCOIS.afterSettings()
     if settings.addonFCOISChangedDynIconMaxUsableSlider == true then
         FCOIS.settingsVars.settings.addonFCOISChangedDynIconMaxUsableSlider = false
     end
+    --FCOIS v1.8.0
+    --Check if the currently set value of "show dynamic icons in submenus if enabled number of dynamic icons is > then x" is above the
+    --value of total enabled dynamic icons (currently set maximum usable dynamicIcons via the slider in the marker icons->dynamic settings).
+    --if so: Set it to the curerntly maximum enabled dynamic icons
+    if settings.useDynSubMenuMaxCount > 0 and settings.numMaxDynamicIconsUsable > 0 then
+        if settings.useDynSubMenuMaxCount > settings.numMaxDynamicIconsUsable then
+            settings.useDynSubMenuMaxCount = settings.numMaxDynamicIconsUsable
+        end
+    end
 
     --Build the additional inventory "flag" context menu button data, which depends on the here before set values
     --FCOIS.numVars.gFCONumDynamicIcons and FCOIS.settingsVars.settings.numMaxDynamicIconsUsable
@@ -592,7 +601,7 @@ function FCOIS.afterSettings()
     --Preset global variable for item destroying
     FCOIS.preventerVars.gAllowDestroyItem = not settings.blockDestroying
     -- Get the marked items for each filter from the settings (or defaults, if not set yet)
-    for filterIconId = 1, numFilterIcons, 1 do
+    for filterIconId = FCOIS_CON_ICON_LOCK, numFilterIcons, 1 do
         FCOIS.markedItems[filterIconId] = settings.markedItems[filterIconId]
     end
     --The automatic set marker icon name was changed from autoMarkSetsGearIconNr to autoMarkSetsIconNr
@@ -667,7 +676,7 @@ function FCOIS.afterSettings()
         end
     end
 
-    ------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 --  Build the additional inventory "flag" context menu button data
 ------------------------------------------------------------------------------------------------------------------------
     --Constants
@@ -677,13 +686,16 @@ function FCOIS.afterSettings()
     --Non changing values
     local showAddInvContextMenuFunc = FCOIS.showContextMenuForAddInvButtons
     local showAddInvContextMenuMouseUpFunc = FCOIS.onContextMenuForAddInvButtonsButtonMouseUp
+    --The "flag" textures
+    local invAddButtonVars = FCOIS.invAdditionalButtonVars
+    local texNormal = invAddButtonVars.texNormal
+    local texMouseOver = invAddButtonVars.texMouseOver
+    --Other variables
     local mouseButtonRight = MOUSE_BUTTON_INDEX_RIGHT
     local text
     local font
     local tooltip = locVars["button_context_menu_tooltip"]
     local anchorTooltip = RIGHT
-    local texNormal = "/esoui/art/ava/tabicon_bg_score_inactive.dds"
-    local texMouseOver = "/esoui/art/ava/tabicon_bg_score_disabled.dds"
     local texClicked = texMouseOver
     local width  = 32
     local height = 32
@@ -735,7 +747,7 @@ function FCOIS.afterSettings()
     FCOIS.settingsVars.settings.blockVendorRepair   = false -- to block the destroy
     --Update the dynamic icons as well, but enable the protection by default to block destroying,
     --as drag&drop of an item at the vendor repair panel will try to destroy the item
-    for filterIconHelper = 1, numFilterIcons do
+    for filterIconHelper = FCOIS_CON_ICON_LOCK, numFilterIcons do
         if iconIsDynamic[filterIconHelper] then
             for filterIconHelperPanel = 1, numLibFiltersFilterPanelIds, 1 do
                 if filterIconHelperPanel == LF_VENDOR_BUY or filterIconHelperPanel == LF_VENDOR_BUYBACK or filterIconHelperPanel == LF_VENDOR_REPAIR then
@@ -755,25 +767,8 @@ end
 --Do some updates to the SavedVariables before the addon menu is created
 function FCOIS.updateSettingsBeforeAddonMenu()
     --SetTracker addon
-    --Support for addon 'SetTracker': Get the number of allowed indices of SetTracker and
-    --build a mapping array for SetTracker index -> FCOIS marker icon
-    if FCOIS.otherAddons.SetTracker.isActive and SetTrack and SetTrack.GetMaxTrackStates then
-        local STtrackingStates = SetTrack.GetMaxTrackStates()
-        for i=0, (STtrackingStates-1), 1 do
-            if FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] == nil then
-                FCOIS.settingsVars.settings.setTrackerIndexToFCOISIcon[i] = 1
-            end
-        end
+    FCOIS.otherAddons.SetTracker.GetSetTrackerSettingsAndBuildFCOISSetTrackerData()
 
-        --BagId to SetTracker addon settings in FCOIS
-        FCOIS.mappingVars.bagToSetTrackerSettings = {
-            [BAG_WORN]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsWorn,
-            [BAG_BACKPACK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsInv,
-            [BAG_BANK]		        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-            [BAG_GUILDBANK]	        = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsGuildBank,
-            [BAG_SUBSCRIBER_BANK]   = FCOIS.settingsVars.settings.autoMarkSetTrackerSetsBank,
-        }
-    end
     --Introduced with FCOIS v0.8.8b
     --Create the armor, jewelry and weapon trait automatic marking arrays and preset them with "true",
     --so all armor, jewelry and weapon set pats will be marked

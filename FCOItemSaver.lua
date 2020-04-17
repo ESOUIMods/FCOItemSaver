@@ -19,7 +19,7 @@
 ---------------------------------------------------------------------
 --[ToDo list] --
 --____________________________
--- Current max bugs: 54
+-- Current max bugs: 74
 --____________________________
 
 -- 1) 2019-01-14 - Bugfix - Baertram
@@ -47,15 +47,6 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 --> src/FCOIS_Hooks.lua ->     ZO_PreHookHandler(ctrlVars.BACKPACK_BAG, "OnEffectivelyShown", FCOItemSaver_OnEffectivelyShown) -> FCOItemSaver_OnEffectivelyShown ->  ZO_PreHookHandler(childrenCtrl, "OnMouseUp", function(...)
 --> causes the error message!
 
--- 44) 2019-12-13 Change of code - Baertram
--- Try to use the listView's setupFunction instead of OnEffectivelyShown to register a secureposthook on the OnMouseUp etc. events to the inventory rows
-
--- 45) 2019-12-29 bug - Baertram
--- SHIFT + right mouse button will restore marker icons on items which got NEW into the inventory or got the same bagId + slotIndex like a before "saved"
--- (via shift+ right mouse) item had. But this item changed it's bagId and slotIndex now or even left the inventory (sold e.g.)
--- So the save should use the itemId/itemInstanceId or uniqueID instead and the restore as well!
---> File FCOIS_MarkerIcons.lua, function FCOIS.checkIfClearOrRestoreAllMarkers()
-
 -- 47) 2019-12-29 bug - Baertram
 -- SHIFT +right click directly in guild bank's withdraw row does not work if the inventory was not at least opened once before
 -- the guild bank was opened
@@ -64,7 +55,7 @@ ZO_MenuItem1_MouseUp:4: in function '(main chunk)'
 ---> Guild bank needs more time to build the rows initially. So we need to wait here until they are build to register the hook!
 --> If you switch to the guild bank deposit and back it got the rows then: ZO_GuildBankBackpack1RowN
 
--- 54) 2020-03-02 - OneSkyGod comments withinF COIS @www.esoui.com
+-- 54) 2020-03-02 - OneSkyGod comments within FCOIS @www.esoui.com
 -- Changing the 5th dynamic icon name -> lua error message
 --[[
 choices and choicesValues need to have the same size
@@ -85,13 +76,22 @@ EsoUI/Libraries/Globals/Globals.lua:51: in function 'OnGlobalMouseDown'
 |caaaaaa<Locals> event = 65544, button = 1, focusEdit = ud </Locals>|r
 ]]
 
+-- 64) 2020-04-09, Baertram
+-- Keybindings for move sell marked to junk/sell should not show at trading house sell, and others where the junk tab is not shown (banks e.g.)
+
+-- 64) 2020-04-16, Baertram
+-- After login / reloadui the FCOIS marker icons on GridList grid do not show (if the GridList grid is not enabled.
+
+
 ---------------------------------------------------------------------
 -- Currently worked on [Added/Fixed/Changed]
 ---------------------------------------------------------------------
---Since last update 1.7.4 - New version: 1.7.5
+--Since last update 1.9.0 - New version: 1.9.1
 ---------------------------------------------------------------------
 --[Fixed]
---#53: API function CallItemSelectionHandler parameter isDragAndDrop moved to the last parameter as intended
+--
+
+--[Changed]
 
 --[Added]
 --

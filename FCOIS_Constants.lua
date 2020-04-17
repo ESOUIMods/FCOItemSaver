@@ -7,8 +7,8 @@ local FCOIS = FCOIS
 FCOIS.addonVars = {}
 local addonVars = FCOIS.addonVars
 --Addon variables
-addonVars.addonVersionOptions 		= '1.7.9' -- version shown in the settings panel
-addonVars.addonVersionOptionsNumber	= 1.79
+addonVars.addonVersionOptions 		= '1.9.1' -- version shown in the settings panel
+addonVars.addonVersionOptionsNumber	= 1.91
 addonVars.gAddonName				= "FCOItemSaver"
 addonVars.gAddonNameShort           = "FCOIS"
 addonVars.addonNameMenu				= "FCO ItemSaver"
@@ -26,6 +26,11 @@ addonVars.donation                  = "https://www.esoui.com/portal.php?id=136&a
 addonVars.gAddonLoaded				= false
 addonVars.gPlayerActivated			= false
 addonVars.gSettingsLoaded			= false
+
+--Dummy SCENE information for file FCOIS_functions.lua -> function FCOIS.getCurrentSceneInfo()
+FCOIS.dummyScene = {
+    ["name"] = addonVars.gAddonName
+}
 
 --SavedVariables constants
 addonVars.savedVarName				= addonVars.gAddonName .. "_Settings"
@@ -123,7 +128,7 @@ if not FCOIS.LDIALOG then d(preVars.preChatTextRed .. string.format(libMissingEr
 
 --Initialize the library LibFeedback
 FCOIS.libFeedback = LibFeedback
---if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
+if FCOIS.libFeedback == nil and LibStub then FCOIS.libFeedback = LibStub:GetLibrary('LibFeedback', true) end
 if not FCOIS.libFeedback then d(preVars.preChatTextRed .. string.format(libMissingErrorText, "LibFeedback")) return end
 
 --All libraries are loaded prolery?
@@ -269,6 +274,11 @@ for dynIconNr = 1, numMaxDynamicIcons, 1 do
 end
 --The maximum marker icons variable
 numVars.gFCONumFilterIcons = FCOIS_CON_ICON_DYNAMIC_30 --42, since FCOIS version 1.4.0
+--Special icon constants
+FCOIS_CON_ICON_ALL					= -1    --All marker icons
+FCOIS_CON_ICON_NONE					= -100  --No marker icon selected
+
+
 
 --Debug depth levels
 FCOIS_DEBUG_DEPTH_NORMAL        = 1
@@ -475,35 +485,6 @@ mappingVars.activeFilterPanelIds			= {
     [LF_JEWELRY_RESEARCH_DIALOG]   = true,
 }
 
---The mapping array for libFilter inventory type to inventory backpack type
-mappingVars.InvToInventoryType = {
-	[LF_INVENTORY] 					= INVENTORY_BACKPACK,
-	[LF_BANK_WITHDRAW] 				= INVENTORY_BANK,
-	[LF_BANK_DEPOSIT]				= INVENTORY_BACKPACK,
-	[LF_GUILDBANK_WITHDRAW] 		= INVENTORY_GUILD_BANK,
-	[LF_GUILDBANK_DEPOSIT]    		= INVENTORY_BACKPACK,
-	[LF_VENDOR_BUY] 				= INVENTORY_BACKPACK,
-    [LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
-    [LF_VENDOR_BUYBACK]				= INVENTORY_BACKPACK,
-    [LF_VENDOR_REPAIR] 				= INVENTORY_BACKPACK,
-	[LF_SMITHING_REFINE]  			= INVENTORY_BACKPACK,
-	[LF_SMITHING_DECONSTRUCT]  		= INVENTORY_BACKPACK,
-	[LF_SMITHING_IMPROVEMENT]		= INVENTORY_BACKPACK,
-	[LF_GUILDSTORE_SELL] 	 		= INVENTORY_BACKPACK,
-	[LF_MAIL_SEND] 					= INVENTORY_BACKPACK,
-	[LF_TRADE] 						= INVENTORY_BACKPACK,
-	[LF_ENCHANTING_CREATION]		= INVENTORY_BACKPACK,
-	[LF_ENCHANTING_EXTRACTION]		= INVENTORY_BACKPACK,
-	[LF_FENCE_SELL] 				= INVENTORY_BACKPACK,
-	[LF_FENCE_LAUNDER]				= INVENTORY_BACKPACK,
-    [LF_CRAFTBAG]					= INVENTORY_CRAFT_BAG,
-    [LF_RETRAIT]                    = INVENTORY_BACKPACK,
-    [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
-    [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
-	[LF_JEWELRY_REFINE]		        = INVENTORY_BACKPACK,
-    [LF_JEWELRY_DECONSTRUCT]		= INVENTORY_BACKPACK,
-    [LF_JEWELRY_IMPROVEMENT]		= INVENTORY_BACKPACK,
-}
 --The LibFilters panelIds where deconstruction can happen
 mappingVars.panelIdToDeconstructable = {
     --Deconstructable
@@ -673,13 +654,14 @@ mappingVars.craftingModeAndCraftingTypeToFilterPanelId = {
     },
 }
 
---The supported vendor LibFilters 2.0 panel IDs
+--The supported vendor LibFilters panel IDs
 mappingVars.supportedVendorPanels = {
     [LF_VENDOR_BUY]     = true,
     [LF_VENDOR_SELL]    = true,
     [LF_VENDOR_BUYBACK] = true,
     [LF_VENDOR_REPAIR]  = true,
 }
+
 
 --Global variable to tell where the filtering is currently needed (Inventory, Bank, Crafting Station, Guild Bank, Guild Store, Mail, Trading, Vendor, Enchanting table, fence)
 -- Standard filtering: Inside player inventory (LF_INVENTORY)
@@ -739,6 +721,7 @@ filterButtonVars.buttonOffsetYImprovement = 7
 FCOIS.otherAddons.gGriedViewOffsetX			= 26
 --Variables for the test if the Addon "Inventory Gridview" is enabled
 FCOIS.otherAddons.GRIDVIEWBUTTON    		= "ZO_PlayerInventory_GridButton"
+
 FCOIS.otherAddons.inventoryGridViewActive = false
 --For the test, if the addon "Chat Merchant" is enabled
 FCOIS.otherAddons.CHATMERCHANTBUTTON 		= "ZO_PlayerInventory_CMbutton"
@@ -896,6 +879,7 @@ FCOIS.ZOControlVars.STORE_BUY_BACK_LIST         = ZO_BuyBackList
 --FCOIS.ZOControlVars.STORE_BUY_BACK_LIST_BAG     = ZO_BuyBackListContents
 FCOIS.ZOControlVars.VENDOR_MAINMENU_BUTTON_BAR  = ""
 --FCOIS.ZOControlVars.FENCE						= ZO_Fence_Keyboard_WindowMenu
+FCOIS.ZOControlVars.FENCE_SCENE_NAME            = "fence_keyboard"
 FCOIS.ZOControlVars.REPAIR                      = ZO_RepairWindow
 FCOIS.ZOControlVars.REPAIR_NAME                 = FCOIS.ZOControlVars.REPAIR:GetName()
 FCOIS.ZOControlVars.REPAIR_LIST				    = ZO_RepairWindowList
@@ -1046,6 +1030,48 @@ FCOIS.ZOControlVars.ZODialog1                   = ZO_Dialog1
 FCOIS.ZOControlVars.mainMenuCategoryBar         = ZO_MainMenuCategoryBar
 local ctrlVars = FCOIS.ZOControlVars
 
+--The mapping array for libFilter inventory type to inventory backpack type
+--Used in function FCOIS.GetInventoryTypeByFilterPanel()
+mappingVars.libFiltersPanelIdToInventory = {
+	[LF_INVENTORY] 					= INVENTORY_BACKPACK,
+	[LF_BANK_WITHDRAW] 				= INVENTORY_BANK,
+	[LF_BANK_DEPOSIT]				= INVENTORY_BACKPACK,
+	[LF_GUILDBANK_WITHDRAW] 		= INVENTORY_GUILD_BANK,
+	[LF_GUILDBANK_DEPOSIT]    		= INVENTORY_BACKPACK,
+	[LF_VENDOR_BUY] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_SELL] 				= INVENTORY_BACKPACK,
+    [LF_VENDOR_BUYBACK]				= INVENTORY_BACKPACK,
+    [LF_VENDOR_REPAIR] 				= INVENTORY_BACKPACK,
+	[LF_GUILDSTORE_SELL] 	 		= INVENTORY_BACKPACK,
+	[LF_MAIL_SEND] 					= INVENTORY_BACKPACK,
+	[LF_TRADE] 						= INVENTORY_BACKPACK,
+	[LF_FENCE_SELL] 				= INVENTORY_BACKPACK,
+	[LF_FENCE_LAUNDER]				= INVENTORY_BACKPACK,
+    [LF_CRAFTBAG]					= INVENTORY_CRAFT_BAG,
+    [LF_HOUSE_BANK_WITHDRAW]        = INVENTORY_HOUSE_BANK,
+    [LF_HOUSE_BANK_DEPOSIT]			= INVENTORY_BACKPACK,
+    [LF_QUICKSLOT]                  = ctrlVars.QUICKSLOT_WINDOW,
+}
+
+--The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
+--Used in function FCOIS.GetInventoryTypeByFilterPanel()
+mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
+    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
+    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
+    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_CREATION]          = nil,
+    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_RESEARCH]          = nil,
+    [LF_SMITHING_RESEARCH_DIALOG]   = nil,
+    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_CREATION]          = nil,
+    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_RESEARCH]          = nil,
+    [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
+}
+
 --The crafting panelIds which should show FCOIS filter buttons
 mappingVars.craftingPanelsWithFCOISFilterButtons = {
     ["ALCHEMY"] = {
@@ -1062,6 +1088,23 @@ mappingVars.craftingPanelsWithFCOISFilterButtons = {
         [LF_SMITHING_RESEARCH]          = { usesFCOISFilterButtons = false, panelControl = nil},
         [LF_SMITHING_RESEARCH_DIALOG]   = { usesFCOISFilterButtons = false, panelControl = nil},
     },
+}
+--The mapping table between the LibFilters filterPaneLid constant and the crafting inventories
+mappingVars.libFiltersPanelIdToCraftingPanelInventory = {
+    [LF_ALCHEMY_CREATION]           = ctrlVars.ALCHEMY,
+    [LF_RETRAIT]                    = ctrlVars.RETRAIT_RETRAIT_PANEL,
+    [LF_SMITHING_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_SMITHING_CREATION]          = nil,
+    [LF_SMITHING_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_SMITHING_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_SMITHING_RESEARCH]          = nil,
+    [LF_SMITHING_RESEARCH_DIALOG]   = nil,
+    [LF_JEWELRY_REFINE]            = ctrlVars.SMITHING.refinementPanel,
+    [LF_JEWELRY_CREATION]          = nil,
+    [LF_JEWELRY_DECONSTRUCT]       = ctrlVars.SMITHING.deconstructionPanel,
+    [LF_JEWELRY_IMPROVEMENT]       = ctrlVars.SMITHING.improvementPanel,
+    [LF_JEWELRY_RESEARCH]          = nil,
+    [LF_JEWELRY_RESEARCH_DIALOG]   = nil,
 }
 
 --Mapping for the house bank BAG numbers
@@ -1292,7 +1335,8 @@ preventerVars.ZO_ListDialog1ResearchIsOpen = false
 preventerVars.splitItemStackDialogActive = false
 preventerVars.splitItemStackDialogButtonCallbacks = false
 preventerVars.useAdvancedFiltersItemCountInInventories = false
-preventerVars.dontUpdateFilteredItemCount = false
+preventerVars.dontUpdateFilteredItemCount                     = false
+preventerVars.lamMenuOpenAndShowingInvPreviewForGridListAddon = false
 
 --The event handler array for OnMouseDoubleClick, Drag&Drop, etc.
 FCOIS.eventHandlers = {}
@@ -2252,7 +2296,10 @@ for i=1, numVars.gFCONumFilterInventoryTypes, 1 do
     end
 end
 
---The mapping table for the additional inventory context menu invoker buttons, their name, their parent and their settings
+--The additional inventory "flag" context menu textures (-> the flag icon)
+invAddButtonVars.texNormal = "/esoui/art/ava/tabicon_bg_score_inactive.dds"
+invAddButtonVars.texMouseOver = "/esoui/art/ava/tabicon_bg_score_disabled.dds"
+--The mapping table for the additional inventory "flag" context menu invoker buttons, their name, their parent and their settings
 local additionalFCOISInvContextmenuButtonNameString = "ButtonFCOISAdditionalOptions"
 invAddButtonVars.playerInventoryFCOAdditionalOptionsButton = ctrlVars.INV_NAME .. additionalFCOISInvContextmenuButtonNameString
 invAddButtonVars.playerBankWithdrawButtonAdditionalOptions = "FCOIS_PlayerBankWithdraw" .. additionalFCOISInvContextmenuButtonNameString
